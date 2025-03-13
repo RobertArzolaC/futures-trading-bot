@@ -158,7 +158,6 @@ dmypy.json
 
 #assets
 apps/media/
-users/
 
 # Pyre type checker
 .pyre/

@@ -49,6 +49,7 @@ LOCAL_APPS = [
     "apps.authentication.apps.AuthenticationConfig",
     "apps.customers.apps.CustomersConfig",
     "apps.users.apps.UsersConfig",
+    "apps.trading.apps.TradingConfig",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -92,7 +93,9 @@ WSGI_APPLICATION = "config.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    "default": config("DATABASE_URL", default="sqlite:///db.sqlite3", cast=db_url)  # noqa
+    "default": config(
+        "DATABASE_URL", default="sqlite:///db.sqlite3", cast=db_url
+    )  # noqa
 }
 
 # Password validation
@@ -203,3 +206,14 @@ CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers.DatabaseScheduler"
 CELERY_BROKER_URL = config("REDIS_URL", default="redis://127.0.0.1:6379/")
 CELERY_RESULT_BACKEND = config("REDIS_URL", default="redis://127.0.0.1:6379/")
+
+CELERY_BEAT_SCHEDULE = {
+    "check-open-positions-every-30s": {
+        "task": "apps.trading.tasks.check_positions_status",
+        "schedule": 30.0,  # Every 30 seconds
+    },
+    "process-signals-every-minute": {
+        "task": "apps.trading.tasks.process_pending_signals",
+        "schedule": 60.0,  # Every minute
+    },
+}

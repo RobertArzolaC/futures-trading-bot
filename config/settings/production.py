@@ -1,6 +1,3 @@
-import sentry_sdk
-from celery.schedules import crontab
-
 from config.settings.base import *  # noqa
 from config.settings.tools.django_constance import *  # noqa
 from config.settings.tools.django_easy_audit import *  # noqa
@@ -96,26 +93,3 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # Configuración de seguridad adicional
 X_FRAME_OPTIONS = "DENY"
-
-
-# Sentry
-sentry_sdk.init(
-    dsn=config("SENTRY_DSN", default=""),  # noqa
-    traces_sample_rate=1.0,
-    _experiments={
-        "continuous_profiling_auto_start": True,
-    },
-)
-
-# Celery tasks configuration
-
-CELERY_BEAT_SCHEDULE = {
-    "generate_and_send_order_report": {
-        "task": "apps.reports.tasks.generate_and_send_order_report",
-        "schedule": crontab(hour=22, minute=0),
-        "kwargs": {
-            "export_format": "excel",
-            "today_only": True,
-        },
-    },
-}
