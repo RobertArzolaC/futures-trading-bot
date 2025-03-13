@@ -1,0 +1,5 @@
+[flake8]
+exclude = */migrations/*
+max-line-length = 80
+select = N,B,C,E,F,S,W,T4,B9
+docstring-convention=google

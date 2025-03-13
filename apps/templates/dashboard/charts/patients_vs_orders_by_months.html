@@ -1,0 +1,158 @@
+<div class="col-xl-6">
+  <div class="card card-xl-stretch mb-5 mb-xl-8">
+    <div class="card-body p-0 d-flex justify-content-between flex-column">
+      <div class="d-flex flex-stack card-p flex-grow-1">
+        <div class="symbol symbol-45px">
+          <div class="symbol-label">
+
+            <i class="ki-duotone ki-heart fs-2x">
+             <span class="path1"></span>
+             <span class="path2"></span>
+            </i>
+          </div>
+        </div>
+
+        <div class="d-flex flex-column text-end">
+          <span class="fw-bolder text-gray-800 fs-2">
+            Patients vs Orders
+          </span>
+          <span class="text-gray-400 fw-semibold fs-6">
+            {% now "Y" %}
+          </span>
+        </div>
+      </div>
+
+      <div class="pt-1">
+        <div id="kll_chart_1" style="height: 200px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const chartData = {{ patients_orders_data|safe }};
+    var element = document.getElementById("kll_chart_1");
+
+    var height = parseInt(KTUtil.css(element, "height"));
+    var labelColor = KTUtil.getCssVariableValue("--kt-gray-500");
+    var baseColor = KTUtil.getCssVariableValue("--bs-primary");
+    var serie1Color = KTUtil.getCssVariableValue("--bs-primary");
+    var serie2Color = KTUtil.getCssVariableValue("--bs-gray");
+    var serie1BgColor = KTUtil.getCssVariableValue("--bs-primary-bg-subtle");
+    var serie2BgColor = KTUtil.getCssVariableValue("--bs-dark-bg-subtle");
+
+    if (!element) {
+      return;
+    }
+
+    var options = {
+      series: chartData["series"],
+      chart: {
+        fontFamily: "inherit",
+        type: "area",
+        height: height,
+        toolbar: {
+          show: false,
+        },
+      },
+      legend: {
+        show: false,
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      fill: {
+        type: "solid",
+        opacity: 1,
+      },
+      stroke: {
+        curve: "smooth",
+        show: true,
+        width: 3,
+        colors: [serie1Color, serie2Color],
+      },
+      xaxis: {
+        categories: chartData["months"],
+        axisBorder: {
+          show: false,
+        },
+        axisTicks: {
+          show: false,
+        },
+        labels: {
+          show: false,
+          style: {
+            colors: labelColor,
+            fontSize: "12px",
+          },
+        },
+        crosshairs: {
+          position: "front",
+          stroke: {
+            color: baseColor,
+            width: 1,
+            dashArray: 3,
+          },
+        },
+        tooltip: {
+          enabled: true,
+          formatter: undefined,
+          offsetY: 0,
+          style: {
+            fontSize: "12px",
+          },
+        },
+      },
+      yaxis: {
+        labels: {
+          show: false,
+          style: {
+            colors: labelColor,
+            fontSize: "12px",
+          },
+        },
+      },
+      states: {
+        normal: {
+          filter: {
+            type: "none",
+            value: 0,
+          },
+        },
+        hover: {
+          filter: {
+            type: "none",
+            value: 0,
+          },
+        },
+        active: {
+          allowMultipleDataPointsSelection: false,
+          filter: {
+            type: "none",
+            value: 0,
+          },
+        },
+      },
+      tooltip: {
+        style: {
+          fontSize: "12px",
+        },
+      },
+      colors: [serie1BgColor, serie2BgColor],
+      grid: {
+        strokeDashArray: 4,
+        show: false,
+      },
+      markers: {
+        strokeColor: baseColor,
+        strokeWidth: 3,
+      },
+    };
+
+    var chart = new ApexCharts(element, options);
+    chart.render();
+  });
+</script>
+{% endblock extra_js %}

@@ -1,0 +1,129 @@
+{% load i18n %}
+
+<div class="col-xl-6">
+  <div class="card card-xl-stretch mb-5 mb-xl-8">
+    <div
+      class="card-body p-0 d-flex justify-content-between flex-column overflow-hidden"
+    >
+      <div class="d-flex flex-stack flex-grow-1 px-9 pt-9 pb-3">
+        <div class="symbol symbol-45px">
+          <div class="symbol-label">
+            <i class="ki-duotone ki-test-tubes fs-2x">
+                <span class="path1"></span>
+                <span class="path2"></span>
+            </i>
+          </div>
+        </div>
+
+        <div class="d-flex flex-column text-end">
+            <span class="fw-bolder text-gray-800 fs-2">
+                {% trans "Orders" %}
+            </span>
+            <span class="text-gray-400 fw-semibold fs-6">
+                {% now "F Y" %}
+            </span>
+        </div>
+      </div>
+
+      <div
+        id="kll_chart_3"
+        style="height: 350px; min-height: 180px"
+      ></div>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/radar.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const chartData = {{ current_month_orders|safe }};
+    var labelColor = KTUtil.getCssVariableValue("--bs-gray-500");
+    var legendColor = KTUtil.getCssVariableValue("--bs-gray-700");
+
+    am5.ready(function () {
+      var root = am5.Root.new("kll_chart_3");
+
+      root.setThemes([am5themes_Animated.new(root)]);
+
+      var chart = root.container.children.push(
+        am5percent.PieChart.new(root, {
+          layout: root.verticalLayout,
+        })
+      );
+
+      var series = chart.series.push(
+        am5percent.PieSeries.new(root, {
+          alignLabels: true,
+          calculateAggregates: true,
+          valueField: "value",
+          categoryField: "category",
+        })
+      );
+
+      series.slices.template.setAll({
+        strokeWidth: 3,
+        stroke: am5.color(0xffffff),
+      });
+
+      series.labels.template.setAll({
+        fill: am5.color(labelColor), // Color gris oscuro para las etiquetas
+        fontSize: 14,             // Tamaño de fuente
+        fontWeight: "bold",       // Opcional: Estilo de texto en negrita
+      });
+
+      series.labelsContainer.set("paddingTop", 30);
+
+      // Set up adapters for variable slice radius
+      // https://www.amcharts.com/docs/v5/concepts/settings/adapters/
+      series.slices.template.adapters.add("radius", function (radius, target) {
+        var dataItem = target.dataItem;
+        var high = series.getPrivate("valueHigh");
+
+        if (dataItem) {
+          var value = target.dataItem.get("valueWorking", 0);
+          return (radius * value) / high;
+        }
+        return radius;
+      });
+
+      // Set data
+      // https://www.amcharts.com/docs/v5/charts/percent-charts/pie-chart/#Setting_data
+      series.data.setAll(chartData);
+
+      // Create legend
+      // https://www.amcharts.com/docs/v5/charts/percent-charts/legend-percent-series/
+      var legend = chart.children.push(
+        am5.Legend.new(root, {
+          centerX: am5.p50,
+          x: am5.p50,
+          paddingBottom: 15,
+          paddingTop: 15,
+          paddingRight: 15,
+        })
+      );
+
+      legend.labels.template.setAll({
+        fill: am5.color(legendColor), // Color azul para los textos
+        fontSize: 14,             // Tamaño de fuente
+      });
+
+      // Cambiar color de los textos de los valores en la leyenda
+      legend.valueLabels.template.setAll({
+        fill: am5.color(legendColor), // Color azul para los valores
+        fontSize: 14,             // Tamaño de fuente
+      });
+
+      legend.data.setAll(series.dataItems);
+
+      // Play initial series animation
+      // https://www.amcharts.com/docs/v5/concepts/animations/#Animation_of_series
+      series.appear(1000, 100);
+    });
+  });
+</script>
+{% endblock extra_js %}
