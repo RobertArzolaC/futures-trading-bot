@@ -8,7 +8,7 @@ from celery import shared_task
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from apps.trading import models, utils
+from apps.trading import choices, models
 
 # Configurar logging
 logger = logging.getLogger(__name__)
@@ -30,12 +30,6 @@ def process_signal(signal_id):
         # Marcar como procesada
         signal.processed = True
         signal.save()
-
-        # Obtener señales en los últimos 60 minutos para el mismo símbolo
-        one_hour_ago = timezone.now() - timedelta(minutes=60)
-        recent_signals = models.Signal.objects.filter(
-            ticker=signal.ticker, timestamp__gte=one_hour_ago
-        ).order_by("timestamp")
 
         # Verificar si hay 5 señales consecutivas del mismo tipo
         # con diferentes estrategias
@@ -69,12 +63,12 @@ def check_consecutive_signals(ticker):
         sell_signals = []
 
         for signal in recent_signals:
-            if signal.signal_type == "buy":
+            if signal.signal_type == choices.OrderSide.BUY:
                 buy_signals.append(signal)
-                sell_signals = []  # Reiniciar secuencia de sell
+                sell_signals = []
             else:  # sell
                 sell_signals.append(signal)
-                buy_signals = []  # Reiniciar secuencia de buy
+                buy_signals = []
 
             # Verificar si tenemos 5 señales del mismo tipo
             if len(buy_signals) >= 5:
@@ -83,7 +77,7 @@ def check_consecutive_signals(ticker):
                 if len(strategies) == 5:
                     # Crear grupo de señales
                     signal_group = models.SignalGroup.objects.create(
-                        direction="buy"
+                        direction=choices.OrderSide.BUY
                     )
                     signal_group.signals.add(*buy_signals[:5])
 
@@ -93,7 +87,7 @@ def check_consecutive_signals(ticker):
                         handle_signal_confirmation.delay(
                             user_id=user.id,
                             signal_group_id=signal_group.id,
-                            direction="buy",
+                            direction=choices.OrderSide.BUY,
                         )
 
                     return f"Buy signal group created: {signal_group.id}"
@@ -104,7 +98,7 @@ def check_consecutive_signals(ticker):
                 if len(strategies) == 5:
                     # Crear grupo de señales
                     signal_group = models.SignalGroup.objects.create(
-                        direction="sell"
+                        direction=choices.OrderSide.SELL
                     )
                     signal_group.signals.add(*sell_signals[:5])
 
@@ -114,7 +108,7 @@ def check_consecutive_signals(ticker):
                         handle_signal_confirmation.delay(
                             user_id=user.id,
                             signal_group_id=signal_group.id,
-                            direction="sell",
+                            direction=choices.OrderSide.SELL,
                         )
 
                     return f"Sell signal group created: {signal_group.id}"
@@ -136,22 +130,20 @@ def handle_signal_confirmation(user_id, signal_group_id, direction):
         signal_group = models.SignalGroup.objects.get(id=signal_group_id)
 
         # Obtener el estado del bot para el usuario
-        bot_status, created = models.models.BotStatus.objects.get_or_create(
-            user=user
-        )
+        bot, _ = models.models.Bot.objects.get_or_create(user=user)
 
         # Verificar si el bot está activo
-        if bot_status.status == "idle":
-            logger.info(
-                f"Bot for user {user.username} is idle, ignoring signals"
-            )
+        if bot.status == choices.BotStatus.IDLE:
+            logger.info(f"Bot for user {user.email} is idle, ignoring signals")
             return f"Bot is idle for user {user_id}, signals ignored"
 
         # Verificar si hay una operación abierta
-        if bot_status.current_operation:
-            current_op = bot_status.current_operation
+        if bot.current_operation:
+            current_op = bot.current_operation
             current_direction = (
-                "buy" if current_op.direction == "long" else "sell"
+                choices.OrderSide.BUY
+                if current_op.direction == choices.OperationDirection.LONG
+                else choices.OrderSide.SELL
             )
 
             # Si la dirección es contraria, cerrar posición actual y abrir nueva
@@ -199,14 +191,18 @@ def open_position_from_signals(user_id, signal_group_id):
         settings = models.TradingSettings.objects.get(user=user)
 
         # Determinar dirección de la operación
-        direction = "long" if signal_group.direction == "buy" else "short"
+        direction = (
+            choices.OperationDirection.LONG
+            if signal_group.direction == choices.OrderSide.BUY
+            else choices.OperationDirection.SHORT
+        )
 
         # Obtener la primera señal para el símbolo y precio
         first_signal = signal_group.signals.all().order_by("timestamp").first()
         symbol = first_signal.ticker
 
         # Abrir la posición
-        return open_position(
+        return open_position.delay(
             user_id=user_id,
             symbol=symbol,
             direction=direction,
@@ -276,9 +272,16 @@ def open_position(
         quantity = round(quantity, quantity_precision)
 
         # Abrir posición
-        side = "BUY" if direction == "long" else "SELL"
-        order = client.futures_create_order(
-            symbol=symbol, side=side, type="MARKET", quantity=quantity
+        side = (
+            choices.OrderSide.BUY
+            if direction == choices.OperationDirection.LONG
+            else choices.OrderSide.SELL
+        )
+        client.futures_create_order(
+            symbol=symbol,
+            side=side,
+            type=choices.OrderType.MARKET,
+            quantity=quantity,
         )
 
         # Crear registro de operación
@@ -286,7 +289,7 @@ def open_position(
             user=user,
             symbol=symbol,
             direction=direction,
-            status="open",
+            status=choices.OperationStatus.OPEN,
             entry_price=Decimal(str(current_price)),
             quantity=Decimal(str(quantity)),
             leverage=leverage,
@@ -296,8 +299,8 @@ def open_position(
         )
 
         # Actualizar estado del bot
-        bot_status, _ = models.BotStatus.objects.get_or_create(user=user)
-        bot_status.status = "operating"
+        bot_status, _ = models.Bot.objects.get_or_create(user=user)
+        bot_status.status = choices.BotStatus.OPERATING
         bot_status.current_operation = operation
         bot_status.save()
 
@@ -311,13 +314,6 @@ def open_position(
                 signal_group.save()
             except models.SignalGroup.DoesNotExist:
                 pass
-
-        # Enviar notificación de Telegram si está configurado
-        if settings.telegram_bot_token and settings.telegram_chat_id:
-            send_telegram_notification.delay(
-                user_id=user_id,
-                message=f"Position opened:\n\n{utils.format_operation_info(operation)}",
-            )
 
         logger.info(
             f"Position opened for user {user.username}: {symbol} {direction}"
@@ -336,7 +332,9 @@ def open_position(
 def close_position(operation_id):
     """Cierra una posición existente"""
     try:
-        operation = models.Operation.objects.get(id=operation_id, status="open")
+        operation = models.Operation.objects.get(
+            id=operation_id, status=choices.OperationStatus.OPEN
+        )
         user = operation.user
         settings = models.TradingSettings.objects.get(user=user)
 
@@ -355,25 +353,29 @@ def close_position(operation_id):
         current_price = float(ticker["price"])
 
         # Cerrar posición
-        side = "SELL" if operation.direction == "long" else "BUY"
-        order = client.futures_create_order(
+        side = (
+            choices.OrderSide.SELL
+            if operation.direction == choices.OperationDirection.LONG
+            else choices.OrderSide.BUY
+        )
+        client.futures_create_order(
             symbol=operation.symbol,
             side=side,
-            type="MARKET",
+            type=choices.OrderType.MARKET,
             quantity=float(operation.quantity),
         )
 
         # Calcular resultados
         entry_price = float(operation.entry_price)
         price_change = ((current_price - entry_price) / entry_price) * 100
-        if operation.direction == "short":
+        if operation.direction == choices.OperationDirection.SHORT:
             price_change = -price_change
 
         profit = price_change * operation.leverage
         profit_usd = float(operation.investment) * (profit / 100)
 
         # Actualizar operación
-        operation.status = "closed"
+        operation.status = choices.OperationStatus.CLOSED
         operation.exit_price = Decimal(str(current_price))
         operation.profit_loss = Decimal(str(profit_usd))
         operation.profit_loss_percentage = Decimal(str(profit))
@@ -381,21 +383,14 @@ def close_position(operation_id):
         operation.save()
 
         # Actualizar estado del bot
-        bot_status = models.BotStatus.objects.get(user=user)
+        bot_status = models.Bot.objects.get(user=user)
         if (
             bot_status.current_operation
             and bot_status.current_operation.id == operation.id
         ):
             bot_status.current_operation = None
-            bot_status.status = "listening"
+            bot_status.status = choices.BotStatus.LISTENING
             bot_status.save()
-
-        # Enviar notificación de Telegram si está configurado
-        if settings.telegram_bot_token and settings.telegram_chat_id:
-            send_telegram_notification.delay(
-                user_id=user.id,
-                message=f"Position closed:\n\n{utils.format_operation_result(operation)}",
-            )
 
         logger.info(
             f"Position closed for user {user.username}: {operation.symbol}"
@@ -434,7 +429,7 @@ def check_positions_status():
             # Calcular ganancia/pérdida actual
             entry_price = float(operation.entry_price)
             price_change = ((current_price - entry_price) / entry_price) * 100
-            if operation.direction == "short":
+            if operation.direction == choices.OperationDirection.SHORT:
                 price_change = -price_change
 
             profit = price_change * operation.leverage
@@ -465,45 +460,16 @@ def process_pending_signals():
 
 
 @shared_task
-def send_telegram_notification(user_id, message):
-    """Envía una notificación por Telegram"""
-    try:
-        import telebot
-
-        user = User.objects.get(id=user_id)
-        settings = models.TradingSettings.objects.get(user=user)
-
-        if not settings.telegram_bot_token or not settings.telegram_chat_id:
-            return "Telegram not configured"
-
-        bot = telebot.TeleBot(settings.telegram_bot_token)
-        bot.send_message(settings.telegram_chat_id, message)
-
-        return "Notification sent"
-    except Exception as e:
-        logger.error(f"Error sending Telegram notification: {str(e)}")
-        return f"Error sending notification: {str(e)}"
-
-
-@shared_task
 def start_bot(user_id):
     """Inicia el bot para un usuario"""
     try:
         user = User.objects.get(id=user_id)
-        bot_status, created = models.BotStatus.objects.get_or_create(user=user)
+        bot, _ = models.Bot.objects.get_or_create(user=user)
 
-        bot_status.status = "listening"
-        bot_status.save()
+        bot.status = choices.BotStatus.LISTENING
+        bot.save()
 
-        logger.info(f"Bot started for user {user.username}")
-
-        # Enviar notificación
-        settings = models.TradingSettings.objects.get(user=user)
-        if settings.telegram_bot_token and settings.telegram_chat_id:
-            send_telegram_notification.delay(
-                user_id=user_id, message="Bot started and listening for signals"
-            )
-
+        logger.info(f"Bot started for user {user.email}")
         return f"Bot started for user {user_id}"
     except Exception as e:
         logger.error(f"Error starting bot for user {user_id}: {str(e)}")
@@ -515,10 +481,10 @@ def stop_bot(user_id):
     """Detiene el bot para un usuario"""
     try:
         user = User.objects.get(id=user_id)
-        bot_status, _ = models.models.BotStatus.objects.get_or_create(user=user)
+        bot, _ = models.models.Bot.objects.get_or_create(user=user)
 
-        bot_status.status = "idle"
-        bot_status.save()
+        bot.status = choices.BotStatus.IDLE
+        bot.save()
 
         logger.info(f"Bot stopped for user {user.username}")
 
@@ -526,10 +492,9 @@ def stop_bot(user_id):
         settings = models.TradingSettings.objects.get(user=user)
         if settings.telegram_bot_token and settings.telegram_chat_id:
             message = "Bot stopped"
-            if bot_status.current_operation:
+            if bot.current_operation:
                 message += ". Warning: There is an open position."
-
-            send_telegram_notification.delay(user_id=user_id, message=message)
+                print(message)
 
         return f"Bot stopped for user {user_id}"
     except Exception as e:

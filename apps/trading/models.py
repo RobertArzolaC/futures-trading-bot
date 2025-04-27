@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 from model_utils.models import TimeStampedModel
+
+from apps.trading import choices, constants
 
 
 class TradingSettings(TimeStampedModel):
@@ -23,7 +24,7 @@ class TradingSettings(TimeStampedModel):
     leverage = models.IntegerField(default=25)
     take_profit = models.IntegerField(default=25)
     stop_loss = models.IntegerField(default=25)
-    symbol = models.CharField(max_length=20, default="BTCUSDT")
+    symbol = models.CharField(max_length=20, default=constants.BTCUSDT)
 
     def __str__(self):
         return f"Trading Settings for {self.user.username}"
@@ -35,10 +36,7 @@ class Signal(TimeStampedModel):
     ticker = models.CharField(max_length=20)
     signal_type = models.CharField(
         max_length=10,
-        choices=[
-            ("buy", "Buy"),
-            ("sell", "Sell"),
-        ],
+        choices=choices.OrderSide.choices,
     )
     timeframe = models.CharField(max_length=10)
     strategy = models.CharField(max_length=50)
@@ -56,24 +54,19 @@ class Signal(TimeStampedModel):
 class Operation(TimeStampedModel):
     """Operaciones abiertas o cerradas"""
 
-    STATUS_CHOICES = [
-        ("open", _("Open")),
-        ("closed", _("Closed")),
-    ]
-    DIRECTION_CHOICES = [
-        ("long", _("Long")),
-        ("short", _("Short")),
-    ]
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="operations",
     )
     symbol = models.CharField(max_length=20)
-    direction = models.CharField(max_length=10, choices=DIRECTION_CHOICES)
+    direction = models.CharField(
+        max_length=10, choices=choices.OperationDirection.choices
+    )
     status = models.CharField(
-        max_length=10, choices=STATUS_CHOICES, default="open"
+        max_length=10,
+        choices=choices.OperationStatus.choices,
+        default=choices.OperationStatus.OPEN,
     )
     entry_price = models.DecimalField(max_digits=16, decimal_places=8)
     exit_price = models.DecimalField(
@@ -117,10 +110,7 @@ class SignalGroup(TimeStampedModel):
     signals = models.ManyToManyField(Signal, related_name="signal_groups")
     direction = models.CharField(
         max_length=10,
-        choices=[
-            ("buy", "Buy"),
-            ("sell", "Sell"),
-        ],
+        choices=choices.OrderSide.choices,
     )
 
     def __str__(self):
@@ -130,15 +120,8 @@ class SignalGroup(TimeStampedModel):
         ordering = ["-created"]
 
 
-class BotStatus(TimeStampedModel):
+class Bot(TimeStampedModel):
     """Estado actual del bot de trading"""
-
-    STATUS_CHOICES = [
-        ("idle", _("Idle")),
-        ("listening", _("Listening")),
-        ("confirming", _("Confirming")),
-        ("operating", _("Operating")),
-    ]
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -146,7 +129,9 @@ class BotStatus(TimeStampedModel):
         related_name="bot_status",
     )
     status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default="idle"
+        max_length=20,
+        choices=choices.BotStatus.choices,
+        default=choices.BotStatus.IDLE,
     )
     confirming_count = models.IntegerField(default=0)
     current_operation = models.ForeignKey(

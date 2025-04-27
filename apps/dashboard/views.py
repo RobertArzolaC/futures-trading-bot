@@ -1,19 +1,17 @@
 from django.db.models import Count, Sum
 from django.views.generic import TemplateView
 
-from apps.core.mixins import CacheMixin
 from apps.trading import forms as trading_forms
 from apps.trading import models as trading_models
 
 
-class DashboardView(CacheMixin, TemplateView):
+class DashboardView(TemplateView):
     template_name = "dashboard/index.html"
-    cache_timeout = 300
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        bot_status, _ = trading_models.BotStatus.objects.get_or_create(
+        bot_status, _ = trading_models.Bot.objects.get_or_create(
             user=self.request.user
         )
 

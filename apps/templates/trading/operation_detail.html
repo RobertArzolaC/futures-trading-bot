@@ -1,0 +1,368 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+{% load i18n %}
+{% load widget_tweaks %}
+{% load breadcrumb_tags %}
+
+{% block title_page%}
+    Operation Details
+{% endblock title_page %}
+
+{% block toolbar_title %}
+    {% trans "Operation" %} #{{ operation.id }}
+{% endblock%}
+
+{% block content %}
+<main class="container-xxl">
+    <div class="card mb-5 mb-xl-10">
+        <div class="card-body pt-9 pb-0">
+            <div class="d-flex flex-wrap flex-sm-nowrap mb-3">
+                <div class="me-7 mb-4">
+                    <div class="symbol symbol-100px symbol-lg-160px symbol-fixed position-relative">
+                        <div class="symbol-label fs-2 fw-semibold bg-light-primary text-primary">
+                            {{ operation.symbol|slice:":2" }}
+                        </div>
+                        <div class="position-absolute translate-middle bottom-0 start-100 mb-6 {% if operation.status == 'open' %}bg-success{% else %}bg-secondary{% endif %} rounded-circle border border-4 border-body h-20px w-20px"></div>
+                    </div>
+                </div>
+
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap mb-2">
+                        <div class="d-flex flex-column">
+                            <div class="d-flex align-items-center mb-2">
+                                <a href="#" class="text-gray-900 text-hover-primary fs-2 fw-bold me-1">
+                                    {{ operation.symbol }}
+                                </a>
+                                <span class="badge {% if operation.direction == 'long' %}badge-light-success{% else %}badge-light-danger{% endif %} fs-7 fw-bold me-2">
+                                    {% if operation.direction == 'long' %}Long{% else %}Short{% endif %}
+                                </span>
+                                <span class="badge {% if operation.status == 'open' %}badge-light-primary{% else %}badge-light-secondary{% endif %} fs-7 fw-bold">
+                                    {% if operation.status == 'open' %}Open{% else %}Closed{% endif %}
+                                </span>
+                            </div>
+
+                            <div class="d-flex flex-wrap fw-semibold fs-6 mb-4 pe-2">
+                                <a href="#" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2">
+                                    <i class="ki-duotone ki-calendar fs-4 me-1">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                    {{ operation.opened_at|date:"M d, Y H:i" }}
+                                </a>
+                                {% if operation.closed_at %}
+                                <a href="#" class="d-flex align-items-center text-gray-400 text-hover-primary mb-2">
+                                    <i class="ki-duotone ki-calendar-tick fs-4 me-1">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                        <span class="path3"></span>
+                                    </i>
+                                    {{ operation.closed_at|date:"M d, Y H:i" }}
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="d-flex my-4">
+                            {% if operation.status == 'open' %}
+                            <a href="{% url 'apps.trading:close_operation' operation.pk %}" class="btn btn-sm btn-danger me-3">
+                                <i class="ki-duotone ki-check fs-3 me-1">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                {% trans "Close Position" %}
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'apps.trading:operations' %}" class="btn btn-sm btn-light-primary">
+                                <i class="ki-duotone ki-arrow-left fs-3 me-1">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                {% trans "Back to Operations" %}
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap flex-stack">
+                        <div class="d-flex flex-column flex-grow-1 pe-8">
+                            <div class="d-flex flex-wrap">
+                                <div class="d-flex flex-column align-items-center border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="fs-2 fw-bold">${{ operation.investment }}</span>
+                                    </div>
+                                    <div class="fw-semibold fs-6">
+                                        {% trans "Investment" %}
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-column align-items-center border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="fs-2 fw-bold">{{ operation.leverage }}x</span>
+                                    </div>
+                                    <div class="fw-semibold fs-6">
+                                        {% trans "Leverage" %}
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-column align-items-center border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="fs-2 fw-bold">{{ operation.take_profit }}%</span>
+                                    </div>
+                                    <div class="fw-semibold fs-6">
+                                        {% trans "Take Profit" %}
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-column align-items-center border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="fs-2 fw-bold">{{ operation.stop_loss }}%</span>
+                                    </div>
+                                    <div class="fw-semibold fs-6">
+                                        {% trans "Stop Loss" %}
+                                    </div>
+                                </div>
+
+                                {% if operation.profit_loss_percentage %}
+                                <div class="d-flex flex-column align-items-center border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="fs-2 fw-bold {% if operation.profit_loss_percentage >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                            {% if operation.profit_loss_percentage >= 0 %}+{% endif %}{{ operation.profit_loss_percentage }}%
+                                        </span>
+                                    </div>
+                                    <div class="fw-semibold fs-6">
+                                        {% trans "ROI" %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-5 g-xl-10 mb-5 mb-xl-10">
+        <!-- Detalles de la operación -->
+        <div class="col-xl-6">
+            <div class="card card-flush h-xl-100" id="kt_operation_details_view">
+                <div class="card-header cursor-pointer">
+                    <div class="card-title m-0">
+                        <h3 class="fw-bold m-0">{% trans "Operation Details" %}</h3>
+                    </div>
+                </div>
+
+                <div class="card-body p-9">
+                    <div class="row mb-7">
+                        <label class="col-lg-4 fw-semibold text-muted">{% trans "Entry Price" %}</label>
+                        <div class="col-lg-8">
+                            <span class="fw-bold fs-6 text-gray-800">{{ operation.entry_price }}</span>
+                        </div>
+                    </div>
+
+                    {% if operation.exit_price %}
+                    <div class="row mb-7">
+                        <label class="col-lg-4 fw-semibold text-muted">{% trans "Exit Price" %}</label>
+                        <div class="col-lg-8">
+                            <span class="fw-bold fs-6 text-gray-800">{{ operation.exit_price }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="row mb-7">
+                        <label class="col-lg-4 fw-semibold text-muted">{% trans "Quantity" %}</label>
+                        <div class="col-lg-8">
+                            <span class="fw-bold fs-6 text-gray-800">{{ operation.quantity }}</span>
+                        </div>
+                    </div>
+
+                    {% if operation.profit_loss %}
+                    <div class="row mb-7">
+                        <label class="col-lg-4 fw-semibold text-muted">{% trans "Profit/Loss" %}</label>
+                        <div class="col-lg-8">
+                            <span class="fw-bold fs-6 {% if operation.profit_loss >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {% if operation.profit_loss >= 0 %}+{% endif %}${{ operation.profit_loss }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="row mb-7">
+                        <label class="col-lg-4 fw-semibold text-muted">{% trans "Duration" %}</label>
+                        <div class="col-lg-8">
+                            <span class="fw-bold fs-6 text-gray-800">
+                                {% if operation.closed_at %}
+                                    {{ operation.opened_at|timesince:operation.closed_at }}
+                                {% else %}
+                                    {{ operation.opened_at|timesince }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    {% if operation.status == 'open' %}
+                    <div class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-6 mb-7">
+                        <div class="d-flex flex-stack flex-grow-1">
+                            <div class="fw-semibold">
+                                <h4 class="text-gray-900 fw-bold">{% trans "Open Position" %}</h4>
+                                <div class="fs-6 text-gray-700">
+                                    {% trans "This position is currently open. Price fluctuations may affect your profit or loss." %}
+                                    <a href="{% url 'apps.trading:close_operation' operation.pk %}" class="fw-bold">{% trans "Close Position" %}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Señales asociadas -->
+        <div class="col-xl-6">
+            <div class="card card-flush h-xl-100">
+                <div class="card-header cursor-pointer">
+                    <div class="card-title m-0">
+                        <h3 class="fw-bold m-0">{% trans "Associated Signals" %}</h3>
+                    </div>
+                </div>
+
+                <div class="card-body pt-0">
+                    {% if signals %}
+                    <div class="table-responsive">
+                        <table class="table align-middle table-row-dashed fs-6 gy-5">
+                            <thead>
+                                <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
+                                    <th class="min-w-100px">{% trans "Strategy" %}</th>
+                                    <th class="min-w-100px">{% trans "Timeframe" %}</th>
+                                    <th class="min-w-100px">{% trans "Type" %}</th>
+                                    <th class="min-w-100px">{% trans "Price" %}</th>
+                                    <th class="min-w-100px">{% trans "Timestamp" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody class="fw-semibold text-gray-600">
+                                {% for signal in signals %}
+                                <tr>
+                                    <td>{{ signal.strategy }}</td>
+                                    <td>{{ signal.timeframe }}</td>
+                                    <td>
+                                        <span class="badge {% if signal.signal_type == 'buy' %}badge-light-success{% else %}badge-light-danger{% endif %}">
+                                            {{ signal.signal_type|upper }}
+                                        </span>
+                                    </td>
+                                    <td>{{ signal.price_close }}</td>
+                                    <td>{{ signal.timestamp|date:"M d, Y H:i" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-10">
+                        <div class="text-muted">
+                            <i class="ki-duotone ki-chart fs-3x mb-4 d-block text-gray-300"></i>
+                            <p>{% trans "No signals associated with this operation" %}</p>
+                            <p class="fs-7">{% trans "This could be a manual operation or the signal data is not available" %}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if operation.status == 'closed' %}
+    <div class="card mb-5 mb-xl-10">
+        <div class="card-header cursor-pointer">
+            <div class="card-title m-0">
+                <h3 class="fw-bold m-0">{% trans "Operation Result" %}</h3>
+            </div>
+        </div>
+
+        <div class="card-body p-9">
+            <div class="d-flex flex-wrap flex-stack">
+                <div class="d-flex flex-column flex-grow-1 pe-8">
+                    <div class="d-flex flex-wrap">
+                        <div class="d-flex flex-column align-items-center border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-2 fw-bold {% if operation.profit_loss >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    {% if operation.profit_loss >= 0 %}+{% endif %}${{ operation.profit_loss }}
+                                </span>
+                            </div>
+                            <div class="fw-semibold fs-6">
+                                {% trans "Net Profit/Loss" %}
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-column align-items-center border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-2 fw-bold {% if operation.profit_loss_percentage >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    {% if operation.profit_loss_percentage >= 0 %}+{% endif %}{{ operation.profit_loss_percentage }}%
+                                </span>
+                            </div>
+                            <div class="fw-semibold fs-6">
+                                {% trans "ROI" %}
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-column align-items-center border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-2 fw-bold">
+                                    {{ operation.opened_at|timesince:operation.closed_at }}
+                                </span>
+                            </div>
+                            <div class="fw-semibold fs-6">
+                                {% trans "Duration" %}
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-column align-items-center border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-2 fw-bold">
+                                    {{ operation.exit_price }}
+                                </span>
+                            </div>
+                            <div class="fw-semibold fs-6">
+                                {% trans "Exit Price" %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if operation.profit_loss >= 0 %}
+            <div class="notice d-flex bg-light-success rounded border-success border border-dashed p-6 mt-6">
+                <div class="d-flex flex-stack flex-grow-1">
+                    <div class="fw-semibold">
+                        <h4 class="text-gray-900 fw-bold">{% trans "Successful Trade" %}</h4>
+                        <div class="fs-6 text-gray-700">
+                            {% trans "Congratulations! This operation was closed with profit." %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="notice d-flex bg-light-danger rounded border-danger border border-dashed p-6 mt-6">
+                <div class="d-flex flex-stack flex-grow-1">
+                    <div class="fw-semibold">
+                        <h4 class="text-gray-900 fw-bold">{% trans "Trade with Loss" %}</h4>
+                        <div class="fs-6 text-gray-700">
+                            {% trans "This operation was closed with a loss. Review your strategy and risk management." %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</main>
+{% endblock content %}
+
+{% block extra_js %}
+    <script src="{% static 'assets/plugins/global/plugins.bundle.js' %}"></script>
+    <script>
+        // Initialize countup for numbers
+        $(document).ready(function() {
+            // Any additional JavaScript for the operation detail view
+        });
+    </script>
+{% endblock extra_js %}

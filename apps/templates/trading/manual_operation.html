@@ -1,0 +1,248 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block title_page%} Manual Operation {% endblock title_page %}
+{% block toolbar_title %}{% trans "Create Manual Operation" %}{% endblock%}
+
+{% block content %}
+<main class="container-xxl">
+    <form class="form d-flex flex-column flex-lg-row" method="post" action="{% url 'apps.trading:manual_operation' %}">
+        {% csrf_token %}
+        <div class="d-flex flex-column gap-7 gap-lg-10 w-100 w-lg-300px mb-7 me-lg-10">
+            <div class="card card-flush py-4">
+                <div class="card-header">
+                    <div class="card-title">
+                        <h2>{% trans "Trading Direction" %}</h2>
+                    </div>
+                </div>
+                <div class="card-body text-center pt-0">
+                    <div class="image-input mb-3" data-kt-image-input="true">
+                        <div class="d-flex justify-content-around">
+                            <div class="form-check form-check-custom form-check-solid form-check-lg">
+                                {% with field=form.direction %}
+                                    {% for radio in field %}
+                                        <div class="form-check form-check-custom form-check-solid mb-5">
+                                            <input class="form-check-input" type="radio"
+                                                name="{{ radio.name }}"
+                                                id="{{ radio.id_for_label }}"
+                                                value="{{ radio.choice_value }}"
+                                                {% if radio.choice_value == field.value %}checked{% endif %}
+                                            >
+                                            <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                                <span class="badge badge-{% if radio.choice_value == 'long' %}success{% else %}danger{% endif %} fs-6 fw-semibold">
+                                                    {{ radio.choice_label }}
+                                                </span>
+                                            </label>
+                                        </div>
+                                    {% endfor %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-muted fs-7">{% trans "Select the direction of your trade. Long (Buy) if you expect the price to go up, or Short (Sell) if you expect the price to go down." %}</div>
+                </div>
+            </div>
+
+            <div class="card card-flush py-4">
+                <div class="card-header">
+                    <div class="card-title">
+                        <h2>{% trans "Risk Info" %}</h2>
+                    </div>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="alert alert-primary d-flex align-items-center p-5 mb-10">
+                        <span class="svg-icon svg-icon-2hx svg-icon-primary me-4">
+                            <i class="ki-duotone ki-information-5 fs-2x">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                                <span class="path3"></span>
+                            </i>
+                        </span>
+                        <div class="d-flex flex-column">
+                            <h4 class="mb-1 text-primary">{% trans "Risk Warning" %}</h4>
+                            <span>{% trans "Trading with leverage involves significant risk. Only invest what you can afford to lose." %}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex flex-column flex-row-fluid">
+            <div class="card mb-5 mb-xl-10">
+                <div class="card-header border-0 cursor-pointer" role="button" data-bs-toggle="collapse" data-bs-target="#kt_operation_details" aria-expanded="true" aria-controls="kt_operation_details">
+                    <div class="card-title m-0">
+                        <h3 class="fw-bold m-0">{% trans "Operation Details" %}</h3>
+                    </div>
+                </div>
+
+                <div id="kt_operation_details" class="collapse show">
+                    <div class="form fv-plugins-bootstrap5 fv-plugins-framework" novalidate="novalidate">
+                        <div class="card-body border-top p-9">
+                            <!-- Trading Pair -->
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-semibold fs-6">
+                                    {% trans "Trading Pair" %}
+                                </label>
+                                <div class="col-lg-8 fv-row fv-plugins-icon-container">
+                                    {% render_field form.symbol class="form-control form-control-lg" placeholder="BTCUSDT" %}
+                                    <div class="form-text">{% trans "Enter the cryptocurrency trading pair (e.g., BTCUSDT, ETHUSDT)" %}</div>
+                                    <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                        {{ form.symbol.errors }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Investment Percentage -->
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-semibold fs-6">
+                                    {% trans "Investment" %}
+                                </label>
+                                <div class="col-lg-8 fv-row fv-plugins-icon-container">
+                                    <div class="input-group">
+                                        {% render_field form.investment_percentage class="form-control form-control-lg" %}
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <div class="form-text">{% trans "Percentage of your available balance to invest in this trade" %}</div>
+                                    <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                        {{ form.investment_percentage.errors }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Leverage -->
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-semibold fs-6">
+                                    {% trans "Leverage" %}
+                                </label>
+                                <div class="col-lg-8 fv-row fv-plugins-icon-container">
+                                    <div class="input-group">
+                                        {% render_field form.leverage class="form-control form-control-lg" %}
+                                        <span class="input-group-text">x</span>
+                                    </div>
+                                    <div class="form-text">{% trans "Leverage multiplier (1-125x)" %}</div>
+                                    <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                        {{ form.leverage.errors }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Take Profit -->
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-semibold fs-6">
+                                    {% trans "Take Profit" %}
+                                </label>
+                                <div class="col-lg-8 fv-row fv-plugins-icon-container">
+                                    <div class="input-group">
+                                        {% render_field form.take_profit class="form-control form-control-lg" %}
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <div class="form-text">{% trans "Percentage profit at which to automatically close the position" %}</div>
+                                    <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                        {{ form.take_profit.errors }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Stop Loss -->
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-semibold fs-6">
+                                    {% trans "Stop Loss" %}
+                                </label>
+                                <div class="col-lg-8 fv-row fv-plugins-icon-container">
+                                    <div class="input-group">
+                                        {% render_field form.stop_loss class="form-control form-control-lg" %}
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <div class="form-text">{% trans "Percentage loss at which to automatically close the position" %}</div>
+                                    <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                        {{ form.stop_loss.errors }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Summary -->
+                            <div class="separator separator-dashed my-10"></div>
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="notice d-flex bg-light-primary rounded border-primary border border-dashed p-6">
+                                        <span class="svg-icon svg-icon-2tx svg-icon-primary me-4">
+                                            <i class="ki-duotone ki-information-5 fs-2x">
+                                                <span class="path1"></span>
+                                                <span class="path2"></span>
+                                                <span class="path3"></span>
+                                            </i>
+                                        </span>
+                                        <div class="d-flex flex-stack flex-grow-1">
+                                            <div class="fw-semibold">
+                                                <h4 class="text-gray-900 fw-bold">{% trans "Operation Summary" %}</h4>
+                                                <div class="fs-6 text-gray-700">
+                                                    {% trans "When you submit this form, the system will execute a trade on your behalf using the parameters specified above. The operation will be tracked and you can monitor its progress from the Operations page." %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer d-flex justify-content-end py-6 px-9">
+                            <a href="{% url 'apps.trading:operations' %}" class="btn btn-light btn-active-light-primary me-2">{% trans "Cancel" %}</a>
+                            <button type="submit" class="btn btn-primary px-6">
+                                <i class="ki-duotone ki-check fs-2 me-1">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                {% trans "Open Position" %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</main>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Form validation
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(event) {
+            // Optional client-side validation could be added here
+        });
+
+        // Price preview (simulated)
+        $('#id_symbol').on('change', function() {
+            const symbol = $(this).val();
+            if (symbol) {
+                // In a real app, you might fetch the current price via an API
+                // This is just a placeholder
+                const mockPrice = (Math.random() * 50000 + 10000).toFixed(2);
+                $('#current_price_display').text(mockPrice);
+            }
+        });
+
+        // Leverage warning
+        $('#id_leverage').on('change', function() {
+            const leverage = parseInt($(this).val());
+            if (leverage > 50) {
+                Swal.fire({
+                    title: '{% trans "High Risk Warning" %}',
+                    text: '{% trans "Trading with high leverage significantly increases your risk. Are you sure you want to continue?" %}',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: '{% trans "Yes, I understand" %}',
+                    cancelButtonText: '{% trans "Reduce leverage" %}'
+                }).then((result) => {
+                    if (!result.isConfirmed) {
+                        $(this).val(25);
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock extra_js %}

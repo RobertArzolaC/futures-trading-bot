@@ -1,0 +1,7 @@
+{
+    "ticker": "BTCUSDT",
+    "signal": "buy",
+    "timeframe": "45",
+    "strategy": "+OTT29",
+    "price_close": "58022",
+}

@@ -1,0 +1,243 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block title_page%} Close Operation {% endblock title_page %}
+{% block toolbar_title %}{% trans "Close Trading Position" %}{% endblock%}
+
+{% block content %}
+<main class="container-xxl">
+    <form class="form d-flex flex-column flex-lg-row" method="post" action="{% url 'apps.trading:close_operation' operation.pk %}">
+        {% csrf_token %}
+        <div class="d-flex flex-column gap-7 gap-lg-10 w-100 w-lg-300px mb-7 me-lg-10">
+            <div class="card card-flush py-4">
+                <div class="card-header">
+                    <div class="card-title">
+                        <h2>{% trans "Operation Status" %}</h2>
+                    </div>
+                </div>
+                <div class="card-body text-center pt-0">
+                    <div class="d-flex flex-column align-items-center mb-5">
+                        <div class="symbol symbol-100px symbol-circle mb-5">
+                            <div class="symbol-label fs-2 fw-bold {% if operation.direction == 'long' %}bg-light-success text-success{% else %}bg-light-danger text-danger{% endif %}">
+                                {{ operation.symbol|slice:":2" }}
+                            </div>
+                        </div>
+                        <div class="fs-3 text-gray-800 fw-bold mb-1">{{ operation.symbol }}</div>
+                        <div class="badge badge-{% if operation.direction == 'long' %}success{% else %}danger{% endif %} fw-bold mb-3">
+                            {{ operation.direction|upper }}
+                        </div>
+                        <div class="fw-semibold text-gray-400">{% trans "Opened on" %}: {{ operation.opened_at|date:"M d, Y H:i" }}</div>
+                    </div>
+
+                    <div class="border border-gray-300 border-dashed rounded py-3 px-4 mb-3">
+                        <div class="fs-6 text-gray-500 mb-1">{% trans "Initial Investment" %}</div>
+                        <div class="fs-2 fw-bold">${{ operation.investment }}</div>
+                    </div>
+
+                    <div class="border border-gray-300 border-dashed rounded py-3 px-4 mb-3">
+                        <div class="fs-6 text-gray-500 mb-1">{% trans "Leverage" %}</div>
+                        <div class="fs-2 fw-bold">{{ operation.leverage }}x</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card card-flush py-4">
+                <div class="card-header">
+                    <div class="card-title">
+                        <h2>{% trans "Market Info" %}</h2>
+                    </div>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="border border-gray-300 border-dashed rounded py-3 px-4 mb-3">
+                        <div class="fs-6 text-gray-500 mb-1">{% trans "Entry Price" %}</div>
+                        <div class="fs-2 fw-bold">{{ operation.entry_price }}</div>
+                    </div>
+
+                    <div class="border border-gray-300 border-dashed rounded py-3 px-4 mb-3">
+                        <div class="fs-6 text-gray-500 mb-1">{% trans "Current Price" %}</div>
+                        <div class="fs-2 fw-bold" id="current_price">--</div>
+                    </div>
+
+                    <div class="border border-gray-300 border-dashed rounded py-3 px-4">
+                        <div class="fs-6 text-gray-500 mb-1">{% trans "Estimated P/L" %}</div>
+                        <div class="fs-2 fw-bold" id="estimated_pl">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex flex-column flex-row-fluid">
+            <div class="card mb-5 mb-xl-10">
+                <div class="card-header border-0 cursor-pointer">
+                    <div class="card-title m-0">
+                        <h3 class="fw-bold m-0">{% trans "Close Position Confirmation" %}</h3>
+                    </div>
+                </div>
+
+                <div class="card-body border-top p-9">
+                    <div class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-6 mb-10">
+                        <span class="svg-icon svg-icon-2tx svg-icon-warning me-4">
+                            <i class="ki-duotone ki-information-5 fs-2x">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                                <span class="path3"></span>
+                            </i>
+                        </span>
+                        <div class="d-flex flex-stack flex-grow-1">
+                            <div class="fw-semibold">
+                                <h4 class="text-gray-900 fw-bold">{% trans "Important Notice" %}</h4>
+                                <div class="fs-6 text-gray-700">
+                                    {% trans "Closing this position will immediately execute a market order on the exchange. This action cannot be undone. Please confirm that you want to close your position now." %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-6">
+                        <label class="col-lg-4 col-form-label fw-semibold fs-6">{% trans "Symbol" %}</label>
+                        <div class="col-lg-8 d-flex align-items-center">
+                            <span class="fw-bold fs-6 text-gray-800">{{ operation.symbol }}</span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-6">
+                        <label class="col-lg-4 col-form-label fw-semibold fs-6">{% trans "Direction" %}</label>
+                        <div class="col-lg-8 d-flex align-items-center">
+                            <span class="badge badge-{% if operation.direction == 'long' %}success{% else %}danger{% endif %}">
+                                {% if operation.direction == 'long' %}{% trans "LONG (BUY)" %}{% else %}{% trans "SHORT (SELL)" %}{% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-6">
+                        <label class="col-lg-4 col-form-label fw-semibold fs-6">{% trans "Quantity" %}</label>
+                        <div class="col-lg-8 d-flex align-items-center">
+                            <span class="fw-bold fs-6 text-gray-800">{{ operation.quantity }}</span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-6">
+                        <label class="col-lg-4 col-form-label fw-semibold fs-6">{% trans "Entry Price" %}</label>
+                        <div class="col-lg-8 d-flex align-items-center">
+                            <span class="fw-bold fs-6 text-gray-800">{{ operation.entry_price }}</span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-6">
+                        <label class="col-lg-4 col-form-label fw-semibold fs-6">{% trans "Current Price" %}</label>
+                        <div class="col-lg-8 d-flex align-items-center">
+                            <span class="fw-bold fs-6 text-gray-800" id="current_price_display">--</span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-6">
+                        <label class="col-lg-4 col-form-label fw-semibold fs-6">{% trans "Price Difference" %}</label>
+                        <div class="col-lg-8 d-flex align-items-center">
+                            <span class="fw-bold fs-6" id="price_diff_display">--</span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-6">
+                        <label class="col-lg-4 col-form-label fw-semibold fs-6">{% trans "Estimated P/L" %}</label>
+                        <div class="col-lg-8 d-flex align-items-center">
+                            <span class="fw-bold fs-6" id="pl_display">--</span>
+                        </div>
+                    </div>
+
+                    <div class="separator separator-dashed my-10"></div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-check form-check-custom form-check-solid mb-5">
+                                <input class="form-check-input" type="checkbox" id="confirm_close" required>
+                                <label class="form-check-label fw-semibold" for="confirm_close">
+                                    {% trans "I confirm that I want to close this position at the current market price." %}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer d-flex justify-content-end py-6 px-9">
+                    <a href="{% url 'apps.trading:operation_detail' operation.pk %}" class="btn btn-light btn-active-light-primary me-2">{% trans "Cancel" %}</a>
+                    <button type="submit" class="btn btn-danger" id="close_position_btn" disabled>
+                        <i class="ki-duotone ki-check fs-2 me-1">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                        {% trans "Close Position" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</main>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Enable/disable submit button based on checkbox
+        $('#confirm_close').change(function() {
+            $('#close_position_btn').prop('disabled', !this.checked);
+        });
+
+        // Simulate fetching current price
+        function fetchCurrentPrice() {
+            // In a real app, this would be an API call to get the current price
+            // For demo purposes, we'll simulate a price that results in a profit or loss
+            const entryPrice = parseFloat('{{ operation.entry_price }}');
+            const direction = '{{ operation.direction }}';
+            const leverage = parseInt('{{ operation.leverage }}');
+            const investment = parseFloat('{{ operation.investment }}');
+
+            // Simulate a price change between -10% and +10% from entry
+            const priceChange = (Math.random() * 0.2 - 0.1) * entryPrice;
+            const currentPrice = entryPrice + priceChange;
+
+            // Calculate P/L
+            let priceDiffPct = (currentPrice - entryPrice) / entryPrice * 100;
+            let profitLoss;
+
+            if (direction === 'long') {
+                profitLoss = priceDiffPct * leverage;
+            } else {
+                profitLoss = -priceDiffPct * leverage;
+                priceDiffPct = -priceDiffPct;
+            }
+
+            const plAmount = investment * (profitLoss / 100);
+
+            // Update UI
+            $('#current_price, #current_price_display').text(currentPrice.toFixed(8));
+            $('#price_diff_display').text(
+                priceDiffPct >= 0 ?
+                `+${priceDiffPct.toFixed(2)}%` :
+                `${priceDiffPct.toFixed(2)}%`
+            ).removeClass('text-success text-danger').addClass(priceDiffPct >= 0 ? 'text-success' : 'text-danger');
+
+            $('#estimated_pl, #pl_display').text(
+                profitLoss >= 0 ?
+                `+${profitLoss.toFixed(2)}% ($${plAmount.toFixed(2)})` :
+                `${profitLoss.toFixed(2)}% ($${plAmount.toFixed(2)})`
+            ).removeClass('text-success text-danger').addClass(profitLoss >= 0 ? 'text-success' : 'text-danger');
+        }
+
+        // Initial fetch and set interval to update every 3 seconds
+        fetchCurrentPrice();
+        setInterval(fetchCurrentPrice, 3000);
+
+        // Form submission confirmation
+        $('form').on('submit', function(e) {
+            if (!$('#confirm_close').is(':checked')) {
+                e.preventDefault();
+                return false;
+            }
+
+            return true;
+        });
+    });
+</script>
+{% endblock extra_js %}

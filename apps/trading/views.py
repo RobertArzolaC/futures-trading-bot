@@ -27,7 +27,7 @@ class SettingsView(LoginRequiredMixin, View):
         if form.is_valid():
             form.save()
             messages.success(request, "Trading settings updated successfully.")
-            return redirect("trading:settings")
+            return redirect("apps.dashboard:index")
         return render(request, "trading/settings.html", {"form": form})
 
 
@@ -114,7 +114,7 @@ class ManualOperationView(LoginRequiredMixin, View):
                 request,
                 "Manual operation request sent. It will be processed shortly.",
             )
-            return redirect("trading:operations")
+            return redirect("apps.trading:operations")
 
 
 class CloseOperationView(LoginRequiredMixin, View):
@@ -140,7 +140,7 @@ class CloseOperationView(LoginRequiredMixin, View):
             request,
             "Operation closing request sent. It will be processed shortly.",
         )
-        return redirect("trading:operations")
+        return redirect("apps.trading:operations")
 
 
 class BotControlView(LoginRequiredMixin, View):
@@ -161,7 +161,7 @@ class BotControlView(LoginRequiredMixin, View):
                 tasks.restart_bot.delay(user_id=request.user.id)
                 messages.success(request, "Bot restarted successfully.")
 
-        return redirect("trading:dashboard")
+        return redirect("apps.dashboard:index")
 
 
 @method_decorator(csrf_exempt, name="dispatch")

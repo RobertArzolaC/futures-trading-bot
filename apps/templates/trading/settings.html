@@ -1,0 +1,203 @@
+{% extends "layouts/dashboard.html" %}
+{% load static %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block title_page%} Trading Settings {% endblock title_page %}
+{% block toolbar_title %}Trading Settings{% endblock%}
+
+{% block content %}
+<main class="container-xxl">
+    <form class="form d-flex flex-column flex-lg-row" method="post" action="{% url 'apps.trading:settings' %}">
+        {% csrf_token %}
+
+        <div class="d-flex flex-column flex-row-fluid">
+            <div class="card mb-5 mb-xl-10">
+                <div class="card-header border-0 cursor-pointer" role="button" data-bs-toggle="collapse" data-bs-target="#kt_trading_settings_details" aria-expanded="true" aria-controls="kt_trading_settings_details">
+                    <div class="card-title m-0">
+                        <h3 class="fw-bold m-0">{% trans "Trading Settings" %}</h3>
+                    </div>
+                </div>
+
+                <div id="kt_trading_settings_details" class="collapse show">
+                    <div class="form fv-plugins-bootstrap5 fv-plugins-framework" novalidate="novalidate">
+                        <div class="card-body border-top p-9">
+                            <!-- API Credentials -->
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label fw-semibold fs-6">
+                                    {% trans "API Credentials" %}
+                                </label>
+                                <div class="col-lg-8">
+                                    <div class="row mb-3">
+                                        <div class="col-lg-12 fv-row fv-plugins-icon-container">
+                                            <label class="form-label">{{ form.api_key.label }}</label>
+                                            {% render_field form.api_key class="form-control form-control-lg" %}
+                                            <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                                {{ form.api_key.errors }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-lg-12 fv-row fv-plugins-icon-container">
+                                            <label class="form-label">{{ form.api_secret.label }}</label>
+                                            {% render_field form.api_secret class="form-control form-control-lg" %}
+                                            <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                                {{ form.api_secret.errors }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Webhook URL -->
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label fw-semibold fs-6">
+                                    {{ form.webhook_url.label }}
+                                </label>
+                                <div class="col-lg-8 fv-row fv-plugins-icon-container">
+                                    {% render_field form.webhook_url class="form-control form-control-lg" %}
+                                    <div class="form-text">{% trans "URL for receiving trading signals" %}</div>
+                                    <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                        {{ form.webhook_url.errors }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Telegram Settings -->
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label fw-semibold fs-6">
+                                    {% trans "Telegram Notifications" %}
+                                </label>
+                                <div class="col-lg-8">
+                                    <div class="row mb-3">
+                                        <div class="col-lg-12 fv-row fv-plugins-icon-container">
+                                            <label class="form-label">{{ form.telegram_bot_token.label }}</label>
+                                            {% render_field form.telegram_bot_token class="form-control form-control-lg" %}
+                                            <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                                {{ form.telegram_bot_token.errors }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-12 fv-row fv-plugins-icon-container">
+                                            <label class="form-label">{{ form.telegram_chat_id.label }}</label>
+                                            {% render_field form.telegram_chat_id class="form-control form-control-lg" %}
+                                            <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                                {{ form.telegram_chat_id.errors }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Trading Parameters -->
+                            <div class="separator separator-dashed my-10"></div>
+
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label fw-semibold fs-6">
+                                    {{ form.symbol.label }}
+                                </label>
+                                <div class="col-lg-8 fv-row fv-plugins-icon-container">
+                                    {% render_field form.symbol class="form-control form-control-lg" %}
+                                    <div class="form-text">{% trans "Trading pair (e.g. BTCUSDT)" %}</div>
+                                    <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                        {{ form.symbol.errors }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label fw-semibold fs-6">
+                                    {{ form.investment_percentage.label }}
+                                </label>
+                                <div class="col-lg-8 fv-row fv-plugins-icon-container">
+                                    <div class="input-group">
+                                        {% render_field form.investment_percentage class="form-control form-control-lg" %}
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <div class="form-text">{% trans "Percentage of available balance to invest per trade" %}</div>
+                                    <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                        {{ form.investment_percentage.errors }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label fw-semibold fs-6">
+                                    {{ form.leverage.label }}
+                                </label>
+                                <div class="col-lg-8 fv-row fv-plugins-icon-container">
+                                    <div class="input-group">
+                                        {% render_field form.leverage class="form-control form-control-lg" %}
+                                        <span class="input-group-text">x</span>
+                                    </div>
+                                    <div class="form-text">{% trans "Leverage multiplier for trades (1-125x)" %}</div>
+                                    <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                        {{ form.leverage.errors }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label fw-semibold fs-6">
+                                    {{ form.take_profit.label }}
+                                </label>
+                                <div class="col-lg-8 fv-row fv-plugins-icon-container">
+                                    <div class="input-group">
+                                        {% render_field form.take_profit class="form-control form-control-lg" %}
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <div class="form-text">{% trans "Percentage profit at which to automatically close position" %}</div>
+                                    <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                        {{ form.take_profit.errors }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label fw-semibold fs-6">
+                                    {{ form.stop_loss.label }}
+                                </label>
+                                <div class="col-lg-8 fv-row fv-plugins-icon-container">
+                                    <div class="input-group">
+                                        {% render_field form.stop_loss class="form-control form-control-lg" %}
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <div class="form-text">{% trans "Percentage loss at which to automatically close position" %}</div>
+                                    <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                        {{ form.stop_loss.errors }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer d-flex justify-content-end py-6 px-9">
+                            <a href="{% url 'apps.dashboard:index' %}" class="btn btn-light btn-active-light-primary me-2">{% trans "Cancel" %}</a>
+                            <button type="submit" class="btn btn-primary px-6">{% trans "Save Changes" %}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</main>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Tooltip initialization
+        $('[data-bs-toggle="tooltip"]').tooltip();
+
+        // Form validation feedback
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+    });
+</script>
+{% endblock extra_js %}
