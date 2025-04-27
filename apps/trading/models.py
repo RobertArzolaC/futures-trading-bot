@@ -2,10 +2,11 @@ from django.conf import settings
 from django.db import models
 from model_utils.models import TimeStampedModel
 
+from apps.core.models import BinanceModel
 from apps.trading import choices, constants
 
 
-class TradingSettings(TimeStampedModel):
+class TradingSettings(TimeStampedModel, BinanceModel):
     """Configuración global de trading para el usuario"""
 
     user = models.OneToOneField(
@@ -27,7 +28,14 @@ class TradingSettings(TimeStampedModel):
     symbol = models.CharField(max_length=20, default=constants.BTCUSDT)
 
     def __str__(self):
-        return f"Trading Settings for {self.user.username}"
+        return f"Trading Settings for {self.user.email}"
+
+    def save(self, *args, **kwargs):
+        if self.api_key:
+            self.api_key = self.encrypt_data(self.api_key)
+        if self.api_secret:
+            self.api_secret = self.encrypt_data(self.api_secret)
+        super().save(*args, **kwargs)
 
 
 class Signal(TimeStampedModel):
@@ -48,7 +56,7 @@ class Signal(TimeStampedModel):
         return f"{self.ticker} - {self.signal_type} - {self.strategy}"
 
     class Meta:
-        ordering = ["-timestamp"]
+        ordering = ["-created"]
 
 
 class Operation(TimeStampedModel):

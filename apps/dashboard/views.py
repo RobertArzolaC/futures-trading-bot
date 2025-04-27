@@ -34,7 +34,7 @@ class DashboardView(TemplateView):
 
         # Ultimas 5 señales
         recent_signals = trading_models.Signal.objects.all().order_by(
-            "-timestamp"
+            "-created"
         )[:5]
 
         context.update(

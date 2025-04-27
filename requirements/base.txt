@@ -29,6 +29,7 @@ setuptools==70.0.0
 coverage==7.5.3
 requests==2.32.3
 sentry-sdk==2.19.2
+cryptography==44.0.2
 
 # Generate Files
 python-magic==0.4.27

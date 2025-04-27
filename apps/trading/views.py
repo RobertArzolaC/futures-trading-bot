@@ -1,3 +1,5 @@
+import json
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
@@ -171,7 +173,11 @@ class WebhookReceiverView(View):
     def post(self, request):
         try:
             # Obtener datos del webhook
-            data = request.json()
+            data = json.loads(request.body)
+            if not data:
+                return JsonResponse(
+                    {"status": "error", "message": "Empty payload"}
+                )
 
             # Validar formato de señal esperado
             required_fields = [

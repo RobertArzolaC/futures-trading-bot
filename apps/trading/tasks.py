@@ -53,7 +53,7 @@ def check_consecutive_signals(ticker):
         one_hour_ago = timezone.now() - timedelta(minutes=60)
         recent_signals = models.Signal.objects.filter(
             ticker=ticker, timestamp__gte=one_hour_ago
-        ).order_by("timestamp")
+        ).order_by("-created")
 
         if recent_signals.count() < 5:
             return "Not enough signals to check"
@@ -66,7 +66,7 @@ def check_consecutive_signals(ticker):
             if signal.signal_type == choices.OrderSide.BUY:
                 buy_signals.append(signal)
                 sell_signals = []
-            else:  # sell
+            else:
                 sell_signals.append(signal)
                 buy_signals = []
 
@@ -126,11 +126,14 @@ def check_consecutive_signals(ticker):
 def handle_signal_confirmation(user_id, signal_group_id, direction):
     """Maneja la confirmación de un grupo de señales para un usuario"""
     try:
+        logger.info(
+            f"Handling signal confirmation for user {user_id}, group {signal_group_id}, direction {direction}"
+        )
         user = User.objects.get(id=user_id)
         signal_group = models.SignalGroup.objects.get(id=signal_group_id)
 
         # Obtener el estado del bot para el usuario
-        bot, _ = models.models.Bot.objects.get_or_create(user=user)
+        bot, _ = models.Bot.objects.get_or_create(user=user)
 
         # Verificar si el bot está activo
         if bot.status == choices.BotStatus.IDLE:
@@ -237,14 +240,14 @@ def open_position(
         settings = models.TradingSettings.objects.get(user=user)
 
         # Verificar credenciales de Binance
-        if not settings.api_key or not settings.api_secret:
+        if not settings.api_key_token or not settings.api_secret_token:
             logger.error(
-                f"Binance API credentials not configured for user {user.username}"
+                f"Binance API credentials not configured for user {user.email}"
             )
             return "Binance API credentials not configured"
 
         # Inicializar cliente Binance
-        client = Client(settings.api_key, settings.api_secret)
+        client = Client(settings.api_key_token, settings.api_secret_token)
 
         # Configurar apalancamiento
         client.futures_change_leverage(symbol=symbol, leverage=leverage)
@@ -252,6 +255,9 @@ def open_position(
         # Obtener información de la cuenta
         account = client.futures_account()
         available_balance = float(account["availableBalance"])
+        logger.info(
+            f"Available balance for user {user.email}: {available_balance}"
+        )
 
         # Calcular tamaño de la posición
         position_size = available_balance * investment_percentage / 100
@@ -277,12 +283,15 @@ def open_position(
             if direction == choices.OperationDirection.LONG
             else choices.OrderSide.SELL
         )
-        client.futures_create_order(
-            symbol=symbol,
-            side=side,
-            type=choices.OrderType.MARKET,
-            quantity=quantity,
+        logger.info(
+            f"Opening position for user {user.email}: {symbol} {side} {quantity}"
         )
+        # client.futures_create_order(
+        #     symbol=symbol,
+        #     side=side,
+        #     type=choices.OrderType.MARKET,
+        #     quantity=quantity,
+        # )
 
         # Crear registro de operación
         operation = models.Operation.objects.create(
@@ -316,7 +325,7 @@ def open_position(
                 pass
 
         logger.info(
-            f"Position opened for user {user.username}: {symbol} {direction}"
+            f"Position opened for user {user.email}: {symbol} {direction}"
         )
         return f"Position opened: {operation.id}"
 
@@ -339,14 +348,14 @@ def close_position(operation_id):
         settings = models.TradingSettings.objects.get(user=user)
 
         # Verificar credenciales de Binance
-        if not settings.api_key or not settings.api_secret:
+        if not settings.api_key_token or not settings.api_secret_token:
             logger.error(
-                f"Binance API credentials not configured for user {user.username}"
+                f"Binance API credentials not configured for user {user.email}"
             )
             return "Binance API credentials not configured"
 
         # Inicializar cliente Binance
-        client = Client(settings.api_key, settings.api_secret)
+        client = Client(settings.api_key_token, settings.api_secret_token)
 
         # Obtener precio actual
         ticker = client.futures_symbol_ticker(symbol=operation.symbol)
@@ -358,12 +367,15 @@ def close_position(operation_id):
             if operation.direction == choices.OperationDirection.LONG
             else choices.OrderSide.BUY
         )
-        client.futures_create_order(
-            symbol=operation.symbol,
-            side=side,
-            type=choices.OrderType.MARKET,
-            quantity=float(operation.quantity),
+        logger.info(
+            f"Closing position for user {user.email}: {operation.symbol} {side}"
         )
+        # client.futures_create_order(
+        #     symbol=operation.symbol,
+        #     side=side,
+        #     type=choices.OrderType.MARKET,
+        #     quantity=float(operation.quantity),
+        # )
 
         # Calcular resultados
         entry_price = float(operation.entry_price)
@@ -393,7 +405,7 @@ def close_position(operation_id):
             bot_status.save()
 
         logger.info(
-            f"Position closed for user {user.username}: {operation.symbol}"
+            f"Position closed for user {user.email}: {operation.symbol}"
         )
         return f"Position closed: {operation.id}"
 
@@ -416,11 +428,11 @@ def check_positions_status():
             settings = models.TradingSettings.objects.get(user=user)
 
             # Verificar credenciales de Binance
-            if not settings.api_key or not settings.api_secret:
+            if not settings.api_key_token or not settings.api_secret_token:
                 continue
 
             # Inicializar cliente Binance
-            client = Client(settings.api_key, settings.api_secret)
+            client = Client(settings.api_key_token, settings.api_secret_token)
 
             # Obtener precio actual
             ticker = client.futures_symbol_ticker(symbol=operation.symbol)
@@ -486,7 +498,7 @@ def stop_bot(user_id):
         bot.status = choices.BotStatus.IDLE
         bot.save()
 
-        logger.info(f"Bot stopped for user {user.username}")
+        logger.info(f"Bot stopped for user {user.email}")
 
         # Enviar notificación
         settings = models.TradingSettings.objects.get(user=user)

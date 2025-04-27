@@ -217,3 +217,7 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": 60.0,  # Every minute
     },
 }
+
+# Custom Fields
+
+ENCRYPTED_FIELDS_KEY = config("ENCRYPTED_FIELDS_KEY", default="your-fernet-key")

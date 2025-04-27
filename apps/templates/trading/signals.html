@@ -62,14 +62,14 @@
                 </div>
                 <div class="w-100 ms-4">
                     <select name="signal_type" class="form-select">
-                        <option value="">{% trans 'All Signal Types' %}</option>
+                        <option value="">{% trans 'Signal Types' %}</option>
                         <option value="buy" {% if request.GET.signal_type == 'buy' %}selected{% endif %}>{% trans 'Buy' %}</option>
                         <option value="sell" {% if request.GET.signal_type == 'sell' %}selected{% endif %}>{% trans 'Sell' %}</option>
                     </select>
                 </div>
                 <div class="w-100 ms-4">
                     <select name="timeframe" class="form-select">
-                        <option value="">{% trans 'All Timeframes' %}</option>
+                        <option value="">{% trans 'Timeframes' %}</option>
                         <option value="1m" {% if request.GET.timeframe == '1m' %}selected{% endif %}>1m</option>
                         <option value="5m" {% if request.GET.timeframe == '5m' %}selected{% endif %}>5m</option>
                         <option value="15m" {% if request.GET.timeframe == '15m' %}selected{% endif %}>15m</option>
@@ -160,7 +160,7 @@
                                         <span class="fw-bold">{{ signal.price_close }}</span>
                                     </td>
                                     <td>
-                                        {{ signal.timestamp|date:"M d, Y H:i:s" }}
+                                        {{ signal.created|date:"M d, Y H:i:s" }}
                                     </td>
                                     <td>
                                         {% if signal.processed %}
@@ -393,7 +393,7 @@
                 </div>
                 <div class="mb-3">
                     <div class="fw-bold text-muted">{% trans "Timestamp" %}</div>
-                    <div class="fs-6">${timestamp}</div>
+                    <div class="fs-6">${created}</div>
                 </div>
                 <div class="mb-3">
                     <div class="fw-bold text-muted">{% trans "Status" %}</div>

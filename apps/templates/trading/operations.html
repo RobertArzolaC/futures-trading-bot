@@ -34,14 +34,14 @@
                 </div>
                 <div class="w-100 ms-4">
                     <select name="status" class="form-select">
-                        <option value="">{% trans 'All Statuses' %}</option>
+                        <option value="">{% trans 'Status' %}</option>
                         <option value="open" {% if request.GET.status == 'open' %}selected{% endif %}>{% trans 'Open' %}</option>
                         <option value="closed" {% if request.GET.status == 'closed' %}selected{% endif %}>{% trans 'Closed' %}</option>
                     </select>
                 </div>
                 <div class="w-100 ms-4">
                     <select name="direction" class="form-select">
-                        <option value="">{% trans 'All Directions' %}</option>
+                        <option value="">{% trans 'Directions' %}</option>
                         <option value="long" {% if request.GET.direction == 'long' %}selected{% endif %}>{% trans 'Long' %}</option>
                         <option value="short" {% if request.GET.direction == 'short' %}selected{% endif %}>{% trans 'Short' %}</option>
                     </select>

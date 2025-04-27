@@ -141,9 +141,6 @@
                                 Strategy
                             </th>
                             <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Timeframe
-                            </th>
-                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Price
                             </th>
                             <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -167,13 +164,10 @@
                                     {{ signal.strategy }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ signal.timeframe }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
                                     {{ signal.price_close }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ signal.timestamp|date:"F j, Y, g:i a" }}
+                                    {{ signal.created|date:"F j, Y, g:i a" }}
                                 </td>
                             </tr>
                         {% endfor %}

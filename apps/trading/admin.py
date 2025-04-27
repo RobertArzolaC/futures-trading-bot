@@ -68,7 +68,7 @@ class SignalAdmin(admin.ModelAdmin):
         "timeframe",
         "strategy",
         "price_close",
-        "timestamp",
+        "created",
         "processed",
     )
     list_filter = (
@@ -76,11 +76,11 @@ class SignalAdmin(admin.ModelAdmin):
         "timeframe",
         "strategy",
         "processed",
-        "timestamp",
+        "created",
     )
     search_fields = ("ticker", "strategy")
-    date_hierarchy = "timestamp"
-    readonly_fields = ("timestamp",)
+    date_hierarchy = "created"
+    readonly_fields = ("created",)
     list_per_page = 50
 
 
