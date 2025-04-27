@@ -25,7 +25,7 @@
                             <!-- API Credentials -->
                             <div class="row mb-6">
                                 <label class="col-lg-4 col-form-label fw-semibold fs-6">
-                                    {% trans "API Credentials" %}
+                                    {% trans "Binance API Credentials" %}
                                 </label>
                                 <div class="col-lg-8">
                                     <div class="row mb-3">
@@ -59,33 +59,6 @@
                                     <div class="form-text">{% trans "URL for receiving trading signals" %}</div>
                                     <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
                                         {{ form.webhook_url.errors }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Telegram Settings -->
-                            <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label fw-semibold fs-6">
-                                    {% trans "Telegram Notifications" %}
-                                </label>
-                                <div class="col-lg-8">
-                                    <div class="row mb-3">
-                                        <div class="col-lg-12 fv-row fv-plugins-icon-container">
-                                            <label class="form-label">{{ form.telegram_bot_token.label }}</label>
-                                            {% render_field form.telegram_bot_token class="form-control form-control-lg" %}
-                                            <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
-                                                {{ form.telegram_bot_token.errors }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-12 fv-row fv-plugins-icon-container">
-                                            <label class="form-label">{{ form.telegram_chat_id.label }}</label>
-                                            {% render_field form.telegram_chat_id class="form-control form-control-lg" %}
-                                            <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
-                                                {{ form.telegram_chat_id.errors }}
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>

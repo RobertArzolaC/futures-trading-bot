@@ -28,13 +28,9 @@ class TradingSettingsAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "Configuración Telegram",
+            "Configuración Externa",
             {
-                "fields": (
-                    "telegram_bot_token",
-                    "telegram_chat_id",
-                    "webhook_url",
-                ),
+                "fields": ("webhook_url",),
                 "classes": ("collapse",),
             },
         ),

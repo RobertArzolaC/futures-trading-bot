@@ -1,6 +1,7 @@
 from django.db.models import Count, Sum
 from django.views.generic import TemplateView
 
+from apps.trading import choices as trading_choices
 from apps.trading import forms as trading_forms
 from apps.trading import models as trading_models
 
@@ -25,7 +26,9 @@ class DashboardView(TemplateView):
             user=self.request.user
         )
         total_operations = operations.count()
-        closed_operations = operations.filter(status="closed")
+        closed_operations = operations.filter(
+            status=trading_choices.OperationStatus.CLOSED
+        )
 
         # Calcular ganancias/pérdidas
         profit_stats = closed_operations.aggregate(

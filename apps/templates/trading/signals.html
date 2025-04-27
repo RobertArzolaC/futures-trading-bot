@@ -220,59 +220,8 @@
                 </div>
 
                 <!-- Pagination -->
-                {% if signals.has_other_pages %}
-                <div class="row">
-                    <div class="col-sm-12 col-md-5 d-flex align-items-center justify-content-center justify-content-md-start">
-                        <div class="dataTables_length">
-                            <span>{% trans "Showing" %} {{ signals.start_index }} {% trans "to" %} {{ signals.end_index }} {% trans "of" %} {{ signals.paginator.count }} {% trans "entries" %}</span>
-                        </div>
-                    </div>
-                    <div class="col-sm-12 col-md-7 d-flex align-items-center justify-content-center justify-content-md-end">
-                        <div class="dataTables_paginate paging_simple_numbers">
-                            <ul class="pagination">
-                                {% if signals.has_previous %}
-                                    <li class="paginate_button page-item previous">
-                                        <a href="?page={{ signals.previous_page_number }}{% if request.GET.ticker %}&ticker={{ request.GET.ticker }}{% endif %}{% if request.GET.signal_type %}&signal_type={{ request.GET.signal_type }}{% endif %}{% if request.GET.timeframe %}&timeframe={{ request.GET.timeframe }}{% endif %}" class="page-link">
-                                            <i class="previous"></i>
-                                        </a>
-                                    </li>
-                                {% else %}
-                                    <li class="paginate_button page-item previous disabled">
-                                        <a href="#" class="page-link">
-                                            <i class="previous"></i>
-                                        </a>
-                                    </li>
-                                {% endif %}
-
-                                {% for i in signals.paginator.page_range %}
-                                    {% if signals.number == i %}
-                                        <li class="paginate_button page-item active">
-                                            <a href="#" class="page-link">{{ i }}</a>
-                                        </li>
-                                    {% elif i > signals.number|add:"-3" and i < signals.number|add:"3" %}
-                                        <li class="paginate_button page-item">
-                                            <a href="?page={{ i }}{% if request.GET.ticker %}&ticker={{ request.GET.ticker }}{% endif %}{% if request.GET.signal_type %}&signal_type={{ request.GET.signal_type }}{% endif %}{% if request.GET.timeframe %}&timeframe={{ request.GET.timeframe }}{% endif %}" class="page-link">{{ i }}</a>
-                                        </li>
-                                    {% endif %}
-                                {% endfor %}
-
-                                {% if signals.has_next %}
-                                    <li class="paginate_button page-item next">
-                                        <a href="?page={{ signals.next_page_number }}{% if request.GET.ticker %}&ticker={{ request.GET.ticker }}{% endif %}{% if request.GET.signal_type %}&signal_type={{ request.GET.signal_type }}{% endif %}{% if request.GET.timeframe %}&timeframe={{ request.GET.timeframe }}{% endif %}" class="page-link">
-                                            <i class="next"></i>
-                                        </a>
-                                    </li>
-                                {% else %}
-                                    <li class="paginate_button page-item next disabled">
-                                        <a href="#" class="page-link">
-                                            <i class="next"></i>
-                                        </a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+                {% if is_paginated %}
+                    {% include "includes/pagination.html" %}
                 {% endif %}
             </div>
         </div>

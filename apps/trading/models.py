@@ -17,8 +17,6 @@ class TradingSettings(TimeStampedModel, BinanceModel):
     api_key = models.CharField(max_length=255, blank=True)
     api_secret = models.CharField(max_length=255, blank=True)
     webhook_url = models.URLField(blank=True)
-    telegram_bot_token = models.CharField(max_length=255, blank=True)
-    telegram_chat_id = models.CharField(max_length=255, blank=True)
 
     # Valores configurables
     investment_percentage = models.IntegerField(default=100)

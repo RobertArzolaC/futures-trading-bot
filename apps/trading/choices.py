@@ -28,3 +28,9 @@ class BotStatus(models.TextChoices):
     LISTENING = "listening", "Listening"
     CONFIRMING = "confirming", "Confirming"
     OPERATING = "operating", "Operating"
+
+
+class BotAction(models.TextChoices):
+    START = "start", "Start"
+    STOP = "stop", "Stop"
+    RESTART = "restart", "Restart"

@@ -500,14 +500,6 @@ def stop_bot(user_id):
 
         logger.info(f"Bot stopped for user {user.email}")
 
-        # Enviar notificación
-        settings = models.TradingSettings.objects.get(user=user)
-        if settings.telegram_bot_token and settings.telegram_chat_id:
-            message = "Bot stopped"
-            if bot.current_operation:
-                message += ". Warning: There is an open position."
-                print(message)
-
         return f"Bot stopped for user {user_id}"
     except Exception as e:
         logger.error(f"Error stopping bot for user {user_id}: {str(e)}")

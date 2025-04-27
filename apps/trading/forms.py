@@ -12,9 +12,6 @@ class TradingSettingsForm(forms.ModelForm):
     api_secret = forms.CharField(
         widget=forms.PasswordInput(render_value=True), required=False
     )
-    telegram_bot_token = forms.CharField(
-        widget=forms.PasswordInput(render_value=True), required=False
-    )
 
     class Meta:
         model = TradingSettings
@@ -22,8 +19,6 @@ class TradingSettingsForm(forms.ModelForm):
             "api_key",
             "api_secret",
             "webhook_url",
-            "telegram_bot_token",
-            "telegram_chat_id",
             "investment_percentage",
             "leverage",
             "take_profit",

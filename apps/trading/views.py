@@ -7,8 +7,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+from django_filters.views import FilterView
 
-from apps.trading import forms, models, tasks
+from apps.trading import choices, filtersets, forms, models, tasks
 
 
 class SettingsView(LoginRequiredMixin, View):
@@ -67,12 +68,14 @@ class OperationDetailView(LoginRequiredMixin, View):
         return render(request, "trading/operation_detail.html", context)
 
 
-class SignalListView(LoginRequiredMixin, View):
+class SignalListView(LoginRequiredMixin, FilterView):
     """Lista de señales recibidas"""
 
-    def get(self, request):
-        signals = models.Signal.objects.all().order_by("-timestamp")
-        return render(request, "trading/signals.html", {"signals": signals})
+    model = models.Signal
+    filterset_class = filtersets.SignalFilterSet
+    template_name = "trading/signals.html"
+    context_object_name = "signals"
+    paginate_by = 6
 
 
 class ManualOperationView(LoginRequiredMixin, View):
@@ -124,7 +127,10 @@ class CloseOperationView(LoginRequiredMixin, View):
 
     def get(self, request, pk):
         operation = get_object_or_404(
-            models.Operation, pk=pk, user=request.user, status="open"
+            models.Operation,
+            pk=pk,
+            user=request.user,
+            status=choices.OperationStatus.OPEN,
         )
         return render(
             request,
@@ -134,7 +140,10 @@ class CloseOperationView(LoginRequiredMixin, View):
 
     def post(self, request, pk):
         operation = get_object_or_404(
-            models.Operation, pk=pk, user=request.user, status="open"
+            models.Operation,
+            pk=pk,
+            user=request.user,
+            status=choices.OperationStatus.OPEN,
         )
         tasks.close_position.delay(operation_id=operation.id)
 
@@ -153,13 +162,13 @@ class BotControlView(LoginRequiredMixin, View):
         if form.is_valid():
             action = form.cleaned_data["action"]
 
-            if action == "start":
+            if action == choices.BotAction.START:
                 tasks.start_bot.delay(user_id=request.user.id)
                 messages.success(request, "Bot started successfully.")
-            elif action == "stop":
+            elif action == choices.BotAction.STOP:
                 tasks.stop_bot.delay(user_id=request.user.id)
                 messages.success(request, "Bot stopped successfully.")
-            elif action == "restart":
+            elif action == choices.BotAction.RESTART:
                 tasks.restart_bot.delay(user_id=request.user.id)
                 messages.success(request, "Bot restarted successfully.")
 
