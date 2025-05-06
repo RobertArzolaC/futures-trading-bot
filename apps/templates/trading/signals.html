@@ -19,7 +19,7 @@
             <span class="path1"></span>
             <span class="path2"></span>
         </i>
-        {% trans 'Configure Webhook' %}
+        {% trans 'Settings' %}
     </a>
 
     <form method="post" action="{% url 'apps.trading:bot_control' %}" class="d-inline-block me-3">
@@ -226,7 +226,7 @@
                                             <p>{% trans "No signals received yet" %}</p>
                                             <p class="fs-7">{% trans "Configure your webhook URL in settings to start receiving signals" %}</p>
                                             <a href="{% url 'apps.trading:settings' %}" class="btn btn-sm btn-primary">
-                                                {% trans "Configure Webhook" %}
+                                                {% trans "Settings" %}
                                             </a>
                                         </div>
                                     </td>

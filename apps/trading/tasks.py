@@ -14,8 +14,13 @@ from apps.trading.strategies import (
     adxt_trending,
     bollinger_reversal,
     ema9_21,
+    fibonacci_retracement,
+    ichimoku,
+    macd_divergence,
+    pivot_points,
     rsi_ma_crossover,
     triple_ema,
+    volume_profile,
 )
 
 # Configurar logging
@@ -428,7 +433,9 @@ def close_position(operation_id):
 @shared_task
 def check_positions_status():
     """Verifica el estado de todas las operaciones abiertas"""
-    open_operations = models.Operation.objects.filter(status="open")
+    open_operations = models.Operation.objects.filter(
+        status=choices.OperationStatus.OPEN
+    )
 
     for operation in open_operations:
         try:
@@ -534,19 +541,22 @@ def run_strategies():
     fetcher = _market_fetcher.MarketDataFetcher(symbol, timeframe)
     data = fetcher.fetch()
 
-    strategies = [
-        rsi_ma_crossover.RSI_MA_CrossoverStrategy(data, symbol, timeframe),
-        adxt_trending.ADXTrendStrategy(data, symbol, timeframe),
-        bollinger_reversal.BollingerReversalStrategy(data, symbol, timeframe),
-        ema9_21.EMA9_21Strategy(data, symbol, timeframe),
-        triple_ema.TripleEMAStrategy(data, symbol, timeframe),
+    strategies_list = [
+        rsi_ma_crossover.RSIMACrossoverStrategy,
+        adxt_trending.ADXTrendStrategy,
+        bollinger_reversal.BollingerReversalStrategy,
+        ema9_21.EMA921Strategy,
+        triple_ema.TripleEMAStrategy,
+        fibonacci_retracement.FibonacciRetracementStrategy,
+        ichimoku.IchimokuStrategy,
+        macd_divergence.MACDDivergenceStrategy,
+        pivot_points.PivotPointsStrategy,
+        volume_profile.VolumeProfileStrategy,
     ]
 
-    for strategy in strategies:
+    for strategy_class in strategies_list:
+        strategy = strategy_class(data, symbol, timeframe)
         signal_data = strategy.generate_signal()
-        logger.info(
-            f"Generated signal: {signal_data['signal']} for {symbol} using {strategy.__class__.__name__}"
-        )
         signal = models.Signal.objects.create(
             ticker=symbol,
             signal_type=signal_data["signal"],

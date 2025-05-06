@@ -2,7 +2,7 @@ from apps.trading import choices
 from apps.trading.strategies._base import TradingStrategy
 
 
-class EMA9_21Strategy(TradingStrategy):
+class EMA921Strategy(TradingStrategy):
     def generate_signal(self) -> str:
         ema9 = self.df["close"].ewm(span=9).mean()
         ema21 = self.df["close"].ewm(span=21).mean()

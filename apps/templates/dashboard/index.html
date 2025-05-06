@@ -249,7 +249,7 @@
                                                 <span class="text-dark fw-bold d-block fs-6">{{ signal.ticker }}</span>
                                             </td>
                                             <td>
-                                                <span class="badge {% if signal.signal_type == 'buy' %}badge-light-success{% else %}badge-light-danger{% endif %} fs-7 fw-bold">
+                                                <span class="badge {% if signal.signal_type == 'buy' %}badge-light-success{% elif signal.signal_type == 'sell' %}badge-light-danger{% else %}badge-light-primary{% endif %} fs-7 fw-bold">
                                                     {{ signal.signal_type|upper }}
                                                 </span>
                                             </td>

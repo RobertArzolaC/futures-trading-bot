@@ -212,9 +212,9 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.trading.tasks.check_positions_status",
         "schedule": 30.0,  # Every 30 seconds
     },
-    "process-signals-every-minute": {
-        "task": "apps.trading.tasks.process_pending_signals",
-        "schedule": 60.0,  # Every minute
+    "run-strategies-every-15-minutes": {
+        "task": "apps.trading.tasks.run_strategies",
+        "schedule": 900.0,  # Every 15 minutes
     },
 }
 

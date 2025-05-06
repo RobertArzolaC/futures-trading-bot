@@ -4,7 +4,7 @@ from apps.trading import choices
 from apps.trading.strategies._base import TradingStrategy
 
 
-class RSI_MA_CrossoverStrategy(TradingStrategy):
+class RSIMACrossoverStrategy(TradingStrategy):
     def generate_signal(self) -> str:
         self.df["rsi"] = ta.momentum.RSIIndicator(
             self.df["close"], window=14
