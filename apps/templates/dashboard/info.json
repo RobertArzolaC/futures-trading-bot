@@ -4,4 +4,8 @@
     "timeframe": "45",
     "strategy": "+OTT29",
     "price_close": "58022",
+    "strategies": [
+        "OTT29", "FLI15", "CES14", "LAT07", "STC05", "RFB28", "TRF02",
+        "TWB08", "CSA34", "IST36", "PAA09"
+    ]
 }

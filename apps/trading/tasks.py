@@ -9,6 +9,14 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from apps.trading import choices, models
+from apps.trading.strategies import (
+    _market_fetcher,
+    adxt_trending,
+    bollinger_reversal,
+    ema9_21,
+    rsi_ma_crossover,
+    triple_ema,
+)
 
 # Configurar logging
 logger = logging.getLogger(__name__)
@@ -66,7 +74,7 @@ def check_consecutive_signals(ticker):
             if signal.signal_type == choices.OrderSide.BUY:
                 buy_signals.append(signal)
                 sell_signals = []
-            else:
+            elif signal.signal_type == choices.OrderSide.SELL:
                 sell_signals.append(signal)
                 buy_signals = []
 
@@ -516,3 +524,35 @@ def restart_bot(user_id):
     except Exception as e:
         logger.error(f"Error restarting bot for user {user_id}: {str(e)}")
         return f"Error restarting bot: {str(e)}"
+
+
+@shared_task
+def run_strategies():
+    """Ejecuta las estrategias de trading para todos los usuarios"""
+    symbol = "BTC/USDT"
+    timeframe = "15m"
+    fetcher = _market_fetcher.MarketDataFetcher(symbol, timeframe)
+    data = fetcher.fetch()
+
+    strategies = [
+        rsi_ma_crossover.RSI_MA_CrossoverStrategy(data, symbol, timeframe),
+        adxt_trending.ADXTrendStrategy(data, symbol, timeframe),
+        bollinger_reversal.BollingerReversalStrategy(data, symbol, timeframe),
+        ema9_21.EMA9_21Strategy(data, symbol, timeframe),
+        triple_ema.TripleEMAStrategy(data, symbol, timeframe),
+    ]
+
+    for strategy in strategies:
+        signal_data = strategy.generate_signal()
+        logger.info(
+            f"Generated signal: {signal_data['signal']} for {symbol} using {strategy.__class__.__name__}"
+        )
+        signal = models.Signal.objects.create(
+            ticker=symbol,
+            signal_type=signal_data["signal"],
+            timeframe=timeframe,
+            strategy=strategy.__class__.__name__,
+            price_close=signal_data["price_close"],
+        )
+
+        process_signal.delay(signal_id=signal.id)

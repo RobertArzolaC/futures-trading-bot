@@ -51,41 +51,54 @@
 {% block content %}
 <main class="container-xxl">
     <div class="card card-flush">
+
         <div class="card-header align-items-center py-5 gap-2 gap-md-5">
             <form method="get" class="card-title">
-                <div class="d-flex align-items-center position-relative my-1">
-                    <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-4">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                    </i>
-                    <input type="text" name="ticker" class="form-control w-250px ps-12" placeholder="{% trans 'Search by Ticker' %}" value="{{ request.GET.ticker }}">
+                <div class="d-flex flex-wrap align-items-center">
+
+                    <!-- Signal Type Filter -->
+                    <div class="me-4 my-1">
+                        <select name="signal_type" class="form-select w-150px">
+                            <option value="">{% trans 'Signal Types' %}</option>
+                            <option value="buy" {% if filter.form.signal_type.value == 'buy' %}selected{% endif %}>{% trans 'Buy' %}</option>
+                            <option value="sell" {% if filter.form.signal_type.value == 'sell' %}selected{% endif %}>{% trans 'Sell' %}</option>
+                        </select>
+                    </div>
+
+                    <!-- Date Range Filters -->
+                    <div class="me-4 my-1">
+                        <div class="input-group w-225px">
+                            <span class="input-group-text">{% trans 'From' %}</span>
+                            <input type="date" name="created__gte" class="form-control" value="{{ filter.form.created__gte.value|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="me-4 my-1">
+                        <div class="input-group w-225px">
+                            <span class="input-group-text">{% trans 'To' %}</span>
+                            <input type="date" name="created__lte" class="form-control" value="{{ filter.form.created__lte.value|default:'' }}">
+                        </div>
+                    </div>
+
+                    <!-- Filter and Reset Buttons -->
+                    <div class="d-flex my-1">
+                        <button type="submit" class="btn btn-light-primary me-2">
+                            <i class="ki-duotone ki-filter fs-2 me-1">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            {% trans "Filter" %}
+                        </button>
+
+                        <a href="{% url 'apps.trading:signals' %}" class="btn btn-light-danger">
+                            <i class="ki-duotone ki-cross-square fs-2 me-1">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            {% trans "Reset" %}
+                        </a>
+                    </div>
                 </div>
-                <div class="w-100 ms-4">
-                    <select name="signal_type" class="form-select">
-                        <option value="">{% trans 'Signal Types' %}</option>
-                        <option value="buy" {% if request.GET.signal_type == 'buy' %}selected{% endif %}>{% trans 'Buy' %}</option>
-                        <option value="sell" {% if request.GET.signal_type == 'sell' %}selected{% endif %}>{% trans 'Sell' %}</option>
-                    </select>
-                </div>
-                <div class="w-100 ms-4">
-                    <select name="timeframe" class="form-select">
-                        <option value="">{% trans 'Timeframes' %}</option>
-                        <option value="1m" {% if request.GET.timeframe == '1m' %}selected{% endif %}>1m</option>
-                        <option value="5m" {% if request.GET.timeframe == '5m' %}selected{% endif %}>5m</option>
-                        <option value="15m" {% if request.GET.timeframe == '15m' %}selected{% endif %}>15m</option>
-                        <option value="1h" {% if request.GET.timeframe == '1h' %}selected{% endif %}>1h</option>
-                        <option value="4h" {% if request.GET.timeframe == '4h' %}selected{% endif %}>4h</option>
-                        <option value="1d" {% if request.GET.timeframe == '1d' %}selected{% endif %}>1d</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-light-primary ms-4 d-flex">
-                    <span class="svg-icon svg-icon-2 me-1">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19.0759 3H4.72777C3.95892 3 3.47768 3.83148 3.86067 4.49814L8.56967 12.6949C9.17923 13.7559 9.5 14.9582 9.5 16.1819V19.5072C9.5 20.2189 10.2223 20.7028 10.8805 20.432L13.8805 19.1977C14.2553 19.0435 14.5 18.6783 14.5 18.273V13.8372C14.5 12.8089 14.8171 11.8056 15.408 10.964L19.8943 4.57465C20.3596 3.912 19.8856 3 19.0759 3Z" fill="currentColor"></path>
-                        </svg>
-                    </span>
-                    {% trans "Filter" %}
-                </button>
             </form>
         </div>
 
@@ -144,9 +157,13 @@
                                             <div class="badge badge-light-success">
                                                 {% trans 'BUY' %}
                                             </div>
-                                        {% else %}
-                                            <div class="badge badge-light-danger">
+                                        {% elif signal.signal_type == 'sell' %}
+                                            <div class="badge badge-light-warning">
                                                 {% trans 'SELL' %}
+                                            </div>
+                                        {% else %}
+                                            <div class="badge badge-light-primary">
+                                                {% trans 'HOLD' %}
                                             </div>
                                         {% endif %}
                                     </td>

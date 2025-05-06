@@ -54,3 +54,7 @@ factory_boy==3.3.3
 
 # Client
 python-binance==1.0.28
+
+# Trading
+ta==0.11.0
+ccxt==4.4.78

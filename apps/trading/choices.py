@@ -4,6 +4,7 @@ from django.db import models
 class OrderSide(models.TextChoices):
     BUY = "buy", "Buy"
     SELL = "sell", "Sell"
+    HOLD = "hold", "Hold"
 
 
 class OrderType(models.TextChoices):
