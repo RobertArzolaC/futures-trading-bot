@@ -16,9 +16,9 @@ CONSTANCE_CONFIG = {
     "LOGO_IMAGE": ("default.png", _("Company default logo"), "image_field"),
     "DARK_LOGO_IMAGE": ("dark_logo.png", _("Company dark logo"), "image_field"),
     "JSON_FIELD_TEST": ({"name": "Robert"}, _("Test json field"), "json_field"),
-    "ENABLE_SEND_EMAIL": (True, _("Enable sending emails.")),
-    "ENABLE_VERIFICATION_EMAIL": (True, _("Enable email verification.")),
     "WEBSITE_DOMAIN": ("https://knowinglabs.com/", _("Website domain.")),
+    "ENABLE_TEST_MODE": (True, _("Enable test mode.")),
+    "DUMMY_BALANCE_AMOUNT": (50000.00, _("Dummy balance amount.")),
 }
 
 CONSTANCE_CONFIG_FIELDSETS = {
@@ -28,9 +28,14 @@ CONSTANCE_CONFIG_FIELDSETS = {
             "DARK_LOGO_IMAGE",
             "JSON_FIELD_TEST",
             "WEBSITE_DOMAIN",
-            "ENABLE_SEND_EMAIL",
-            "ENABLE_VERIFICATION_EMAIL",
         ),
         "collapse": False,
+    },
+    "2. Test Options": {
+        "fields": (
+            "ENABLE_TEST_MODE",
+            "DUMMY_BALANCE_AMOUNT",
+        ),
+        "collapse": True,
     },
 }

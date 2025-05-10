@@ -5,6 +5,7 @@ from decimal import Decimal
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
 from celery import shared_task
+from constance import config
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
@@ -267,7 +268,12 @@ def open_position(
 
         # Obtener información de la cuenta
         account = client.futures_account()
-        available_balance = float(account["availableBalance"])
+
+        if config.ENABLE_TEST_MODE:
+            available_balance = config.DUMMY_BALANCE_AMOUNT
+        else:
+            available_balance = float(account["availableBalance"])
+
         logger.info(
             f"Available balance for user {user.email}: {available_balance}"
         )
@@ -299,12 +305,14 @@ def open_position(
         logger.info(
             f"Opening position for user {user.email}: {symbol} {side} {quantity}"
         )
-        # client.futures_create_order(
-        #     symbol=symbol,
-        #     side=side,
-        #     type=choices.OrderType.MARKET,
-        #     quantity=quantity,
-        # )
+
+        if not config.TEST_MODE:
+            client.futures_create_order(
+                symbol=symbol,
+                side=side,
+                type=choices.OrderType.MARKET,
+                quantity=quantity,
+            )
 
         # Crear registro de operación
         operation = models.Operation.objects.create(
@@ -383,12 +391,14 @@ def close_position(operation_id):
         logger.info(
             f"Closing position for user {user.email}: {operation.symbol} {side}"
         )
-        # client.futures_create_order(
-        #     symbol=operation.symbol,
-        #     side=side,
-        #     type=choices.OrderType.MARKET,
-        #     quantity=float(operation.quantity),
-        # )
+
+        if not config.TEST_MODE:
+            client.futures_create_order(
+                symbol=operation.symbol,
+                side=side,
+                type=choices.OrderType.MARKET,
+                quantity=float(operation.quantity),
+            )
 
         # Calcular resultados
         entry_price = float(operation.entry_price)
