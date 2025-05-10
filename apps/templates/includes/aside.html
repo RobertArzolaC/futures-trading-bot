@@ -5,8 +5,9 @@
 <nav id="kt_aside" class="aside aside-default aside-hoverable" data-kt-drawer="true" data-kt-drawer-name="aside" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="{default:'200px', '300px': '250px'}" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_aside_toggle">
   <div class="aside-logo flex-column-auto d-flex justify-content-center align-items-center px-10 pt-9 pb-5" id="kt_aside_logo">
     <a href="{% url "apps.dashboard:index" %}">
-      <img alt="Logo" src="{% static 'assets/images/logos/logo.png' %}" class="max-h-50px logo-default theme-light-show" height="200" />
-      <img alt="Logo" src="{% static 'assets/images/logos/logo-dark.png' %}" class="max-h-50px logo-default theme-dark-show" height="200" />
+      {% get_media_prefix as MEDIA_URL %}
+      <img alt="Logo" src="{{ MEDIA_URL }}{{ config.LOGO_IMAGE }}" class="max-h-50px logo-default theme-light-show" height="200" />
+      <img alt="Logo" src="{{ MEDIA_URL }}{{ config.DARK_LOGO_IMAGE }}" class="max-h-50px logo-default theme-dark-show" height="200" />
     </a>
   </div>
   <div class="aside-menu flex-column-fluid ps-3 pe-1">
@@ -20,21 +21,6 @@
           </div>
         </div>
         <div class="menu-item">
-            <a class="menu-link" href="{% url 'apps.trading:settings' %}">
-              <span class="menu-icon">
-                <i class="ki-duotone ki-people fs-2 me-2">
-                  <span class="path1"></span>
-                  <span class="path2"></span>
-                  <span class="path3"></span>
-                  <span class="path4"></span>
-                  <span class="path5"></span>
-                </i>
-              </span>
-              <span class="menu-title">
-                {% trans 'Settings' %}
-              </span>
-            </a>
-
             <a class="menu-link" href="{% url 'apps.trading:operations' %}">
               <span class="menu-icon">
                 <i class="ki-duotone ki-people fs-2 me-2">

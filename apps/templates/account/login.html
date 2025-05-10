@@ -30,17 +30,13 @@
             <div class="w-lg-500px p-10 p-lg-15 mx-auto">
                 <div class="text-center mb-10">
                     <a href="/" class="py-2 py-lg-20">
-                        <img alt="Logo" src="{% static 'assets/images/logos/logo.png' %}" class="max-h-200px logo-default theme-light-show" height="200" />
-                        <img alt="Logo" src="{% static 'assets/images/logos/logo-dark.png' %}" class="max-h-200px logo-default theme-dark-show" height="200" />
+                        {% get_media_prefix as MEDIA_URL %}
+                        <img alt="Logo" src="{{ MEDIA_URL }}{{ config.LOGO_IMAGE }}" class="max-h-200px logo-default theme-light-show" height="200" />
+                        <img alt="Logo" src="{{ MEDIA_URL }}{{ config.DARK_LOGO_IMAGE }}" class="max-h-200px logo-default theme-dark-show" height="200" />
                     </a>
                 </div>
                 <form class="form w-100" method="POST" action="{% url "account_login" %}">
                     {% csrf_token %}
-                    <div class="text-center mb-10">
-                        <h1 class="text-gray-900 mb-3">
-                            Sign In
-                        </h1>
-                    </div>
                     <div class="fv-row mb-10">
                         {{ form.login|add_label_class:"form-label fs-6 fw-bold text-gray-900" }}
                         {{ form.login|add_class:"form-control form-control-lg" }}

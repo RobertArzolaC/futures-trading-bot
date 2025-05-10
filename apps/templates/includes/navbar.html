@@ -14,7 +14,9 @@
                 </div>
             </div>
             <a href="#" class="d-lg-none">
-                <img alt="Logo" src="{% static 'assets/images/logos/logo.png' %}" class="max-h-50px logo-default" height="30" />
+                {% get_media_prefix as MEDIA_URL %}
+                <img alt="Logo" src="{{ MEDIA_URL }}{{ config.LOGO_IMAGE }}" class="max-h-50px logo-default" height="30" >
+                <img alt="Logo" src="{{ MEDIA_URL }}{{ config.DARK_LOGO_IMAGE }}" class="max-h-50px logo-default" height="30" />
             </a>
             <div class="btn btn-icon w-auto ps-0 btn-active-color-primary d-none d-lg-inline-flex me-2 me-lg-5" data-kt-toggle="true" data-kt-toggle-state="active" data-kt-toggle-target="body" data-kt-toggle-name="aside-minimize">
                 <i class="ki-duotone ki-black-left-line fs-1 rotate-180">
@@ -118,33 +120,9 @@
                                 {% trans "My Profile" %}
                             </a>
                         </div>
-                        {% if request.user.is_superuser or request.user.is_staff %}
-                            <div class="menu-item px-5">
-                                <a href="{% url "apps.customers:account_list" %}" class="menu-link px-5">
-                                    {% trans "Accounts" %}
-                                </a>
-                            </div>
-                        {% endif %}
-                        {% if request.user.is_account %}
-                            <div class="menu-item px-5">
-                                <a href="{% url "apps.customers:patient_list" %}" class="menu-link px-5">
-                                    <span class="menu-text">
-                                        {% trans "My Patients" %}
-                                    </span>
-                                </a>
-                            </div>
-                            <div class="menu-item px-5">
-                                <a href="{% url "apps.laboratory:panel_list" %}" class="menu-link px-5">
-                                    <span class="menu-text">
-                                        {% trans "My Panels" %}
-                                    </span>
-                                </a>
-                            </div>
-                        {% endif %}
-                        <div class="separator my-2"></div>
                         <div class="menu-item px-5 my-1">
-                            <a href="{% url "apps.users:settings" %}" class="menu-link px-5">
-                                {% trans "Account Settings" %}
+                            <a href="{% url 'apps.trading:settings' %}" class="menu-link px-5">
+                                {% trans "Settings" %}
                             </a>
                         </div>
                         <div class="menu-item px-5">

@@ -14,14 +14,6 @@
 
 {% block entity_options %}
 <div class="d-flex align-items-center flex-nowrap text-nowrap py-1">
-    <a href="{% url 'apps.trading:settings' %}" class="btn btn-light-primary me-3">
-        <i class="ki-duotone ki-setting-2 fs-3 me-1">
-            <span class="path1"></span>
-            <span class="path2"></span>
-        </i>
-        {% trans 'Settings' %}
-    </a>
-
     <form method="post" action="{% url 'apps.trading:bot_control' %}" class="d-inline-block me-3">
         {% csrf_token %}
         <input type="hidden" name="action" value="start">
