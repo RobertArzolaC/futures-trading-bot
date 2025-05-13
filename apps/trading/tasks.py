@@ -557,7 +557,7 @@ def restart_bot(user_id):
 def run_strategies():
     """Ejecuta las estrategias de trading para todos los usuarios"""
     symbol = "BTC/USDT"
-    timeframe = "10m"
+    timeframe = "15m"
     fetcher = _market_fetcher.MarketDataFetcher(symbol, timeframe)
     data = fetcher.fetch()
 
