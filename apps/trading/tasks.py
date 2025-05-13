@@ -14,12 +14,17 @@ from apps.trading.strategies import (
     _market_fetcher,
     adxt_trending,
     bollinger_reversal,
+    dca_vwap_scalping,
     ema9_21,
     fibonacci_retracement,
     ichimoku,
     macd_divergence,
+    mean_reversion_grid,
+    obv_divergence,
     pivot_points,
     rsi_ma_crossover,
+    squeeze_momentum,
+    super_trend,
     triple_ema,
     volume_profile,
 )
@@ -562,6 +567,11 @@ def run_strategies():
         macd_divergence.MACDDivergenceStrategy,
         pivot_points.PivotPointsStrategy,
         volume_profile.VolumeProfileStrategy,
+        dca_vwap_scalping.DCAVWAPScalpingStrategy,
+        mean_reversion_grid.MeanReversionGridStrategy,
+        obv_divergence.OBVDivergenceStrategy,
+        squeeze_momentum.SqueezeMomentumStrategy,
+        super_trend.SupertrendStrategy,
     ]
 
     for strategy_class in strategies_list:
