@@ -1,5 +1,5 @@
 # Django
-Django==4.2.16
+Django==5.2
 #pillow==10.3.0
 asgiref==3.8.1
 
@@ -16,9 +16,9 @@ django-celery-beat==2.7.0
 django-sesame==3.2.2
 
 # Environment settings
-python-dotenv==1.0.1
+python-dotenv==1.1.0
 python-decouple==3.8
-dj-database-url==1.2.0
+dj-database-url==2.3.0
 
 # Others
 Faker==25.8.0
