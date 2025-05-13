@@ -7,7 +7,7 @@ class MarketDataFetcher:
         self.symbol = symbol
         self.timeframe = timeframe
         self.limit = limit
-        self.exchange = ccxt.binance()
+        self.exchange = ccxt.binanceus()
 
     def fetch(self) -> pd.DataFrame:
         ohlcv = self.exchange.fetch_ohlcv(
