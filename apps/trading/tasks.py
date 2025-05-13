@@ -316,7 +316,7 @@ def open_position(
             f"Opening position for user {user.email}: {symbol} {side} {quantity}"
         )
 
-        if not config.TEST_MODE:
+        if not config.ENABLE_TEST_MODE:
             client.futures_create_order(
                 symbol=symbol,
                 side=side,
@@ -402,7 +402,7 @@ def close_position(operation_id):
             f"Closing position for user {user.email}: {operation.symbol} {side}"
         )
 
-        if not config.TEST_MODE:
+        if not config.ENABLE_TEST_MODE:
             client.futures_create_order(
                 symbol=operation.symbol,
                 side=side,
