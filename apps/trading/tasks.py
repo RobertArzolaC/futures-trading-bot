@@ -14,19 +14,24 @@ from apps.trading.strategies import (
     _market_fetcher,
     adxt_trending,
     bollinger_reversal,
+    crypto_seasonality_momentum,
     dca_vwap_scalping,
     ema9_21,
     fibonacci_retracement,
     ichimoku,
     macd_divergence,
+    market_profile_value_area,
     mean_reversion_grid,
     obv_divergence,
+    order_block,
     pivot_points,
     rsi_ma_crossover,
+    smart_money_concept,
     squeeze_momentum,
     super_trend,
     triple_ema,
     volume_profile,
+    wyckoff_accumulation,
 )
 
 # Configurar logging
@@ -572,6 +577,11 @@ def run_strategies():
         obv_divergence.OBVDivergenceStrategy,
         squeeze_momentum.SqueezeMomentumStrategy,
         super_trend.SupertrendStrategy,
+        crypto_seasonality_momentum.CryptoSeasonalityMomentumStrategy,
+        market_profile_value_area.MarketProfileVAStrategy,
+        order_block.OrderBlockStrategy,
+        smart_money_concept.SmartMoneyConceptStrategy,
+        wyckoff_accumulation.WyckoffAccumulationStrategy,
     ]
 
     for strategy_class in strategies_list:
