@@ -209,13 +209,13 @@ CELERY_BROKER_URL = config("REDIS_URL", default="redis://127.0.0.1:6379/")
 CELERY_RESULT_BACKEND = config("REDIS_URL", default="redis://127.0.0.1:6379/")
 
 CELERY_BEAT_SCHEDULE = {
-    "check-open-positions-every-30s": {
+    "check-open-positions-every-30-seconds": {
         "task": "apps.trading.tasks.check_positions_status",
         "schedule": 30.0,  # Every 30 seconds
     },
-    "run-strategies-every-15-minutes": {
+    "run-strategies-every-10-minutes": {
         "task": "apps.trading.tasks.run_strategies",
-        "schedule": 900.0,  # Every 15 minutes
+        "schedule": 600.0,  # Every 10 minutes
     },
 }
 

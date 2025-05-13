@@ -75,7 +75,7 @@ class SignalListView(LoginRequiredMixin, FilterView):
     filterset_class = filtersets.SignalFilterSet
     template_name = "trading/signals.html"
     context_object_name = "signals"
-    paginate_by = 6
+    paginate_by = 10
 
 
 class ManualOperationView(LoginRequiredMixin, View):
