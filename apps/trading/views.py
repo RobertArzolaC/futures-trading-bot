@@ -2,36 +2,50 @@ import json
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.messages.views import SuccessMessageMixin
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import CreateView
 from django_filters.views import FilterView
 
 from apps.trading import choices, filtersets, forms, models, tasks
 
 
-class SettingsView(LoginRequiredMixin, View):
+class SettingsView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """Vista para configuración del trading"""
 
-    def get(self, request):
-        settings_obj, _ = models.TradingSettings.objects.get_or_create(
-            user=request.user
-        )
-        form = forms.TradingSettingsForm(instance=settings_obj)
-        return render(request, "trading/settings.html", {"form": form})
+    model = models.TradingSettings
+    form_class = forms.TradingSettingsForm
+    template_name = "trading/settings.html"
+    success_url = reverse_lazy("apps.trading:settings")
+    success_message = "Trading settings updated successfully."
 
-    def post(self, request):
-        settings_obj, _ = models.TradingSettings.objects.get_or_create(
-            user=request.user
-        )
-        form = forms.TradingSettingsForm(request.POST, instance=settings_obj)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Trading settings updated successfully.")
-            return redirect("apps.dashboard:index")
-        return render(request, "trading/settings.html", {"form": form})
+    def get_queryset(self):
+        """Obtener la configuración existente del usuario"""
+        try:
+            return models.TradingSettings.objects.get(user=self.request.user)
+        except models.TradingSettings.DoesNotExist:
+            return None
+
+    def get_context_data(self, **kwargs):
+        """Agregar la configuración existente al contexto"""
+        context = super().get_context_data(**kwargs)
+        settings = self.get_queryset()
+        if settings:
+            context["form"].initial = {
+                "symbol": settings.symbol,
+                "investment_percentage": settings.investment_percentage,
+                "leverage": settings.leverage,
+                "take_profit": settings.take_profit,
+                "stop_loss": settings.stop_loss,
+                "api_key": settings.api_key,
+                "api_secret": settings.api_secret,
+            }
+        return context
 
 
 class OperationListView(LoginRequiredMixin, View):
