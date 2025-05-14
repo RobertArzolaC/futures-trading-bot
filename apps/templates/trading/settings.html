@@ -32,18 +32,23 @@
                                         <div class="col-lg-12 fv-row fv-plugins-icon-container">
                                             <label class="form-label">{{ form.api_key.label }}</label>
                                             {% render_field form.api_key class="form-control form-control-lg" %}
-                                            <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
-                                                {{ form.api_key.errors }}
-                                            </div>
+                                            {% if form.api_key.errors %}
+                                                <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                                    {{ form.api_key.errors }}
+
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="row mb-3">
                                         <div class="col-lg-12 fv-row fv-plugins-icon-container">
                                             <label class="form-label">{{ form.api_secret.label }}</label>
                                             {% render_field form.api_secret class="form-control form-control-lg" %}
-                                            <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
-                                                {{ form.api_secret.errors }}
-                                            </div>
+                                            {% if form.api_secret.errors %}
+                                                <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                                    {{ form.api_secret.errors }}
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -56,10 +61,14 @@
                                 </label>
                                 <div class="col-lg-8 fv-row fv-plugins-icon-container">
                                     {% render_field form.webhook_url class="form-control form-control-lg" %}
-                                    <div class="form-text">{% trans "URL for receiving trading signals" %}</div>
-                                    <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
-                                        {{ form.webhook_url.errors }}
+                                    <div class="form-text">
+                                        {% trans "URL for receiving trading signals" %}
                                     </div>
+                                    {% if form.webhook_url.errors %}
+                                        <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                            {{ form.webhook_url.errors }}
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
 
@@ -72,10 +81,14 @@
                                 </label>
                                 <div class="col-lg-8 fv-row fv-plugins-icon-container">
                                     {% render_field form.symbol class="form-control form-control-lg" %}
-                                    <div class="form-text">{% trans "Trading pair (e.g. BTCUSDT)" %}</div>
-                                    <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
-                                        {{ form.symbol.errors }}
+                                    <div class="form-text">
+                                        {% trans "Trading pair (e.g. BTCUSDT)" %}
                                     </div>
+                                    {% if form.symbol.errors %}
+                                        <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                            {{ form.symbol.errors }}
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
 
@@ -89,9 +102,11 @@
                                         <span class="input-group-text">%</span>
                                     </div>
                                     <div class="form-text">{% trans "Percentage of available balance to invest per trade" %}</div>
-                                    <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
-                                        {{ form.investment_percentage.errors }}
-                                    </div>
+                                    {% if form.investment_percentage.errors %}
+                                        <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                            {{ form.investment_percentage.errors }}
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
 
@@ -104,10 +119,14 @@
                                         {% render_field form.leverage class="form-control form-control-lg" %}
                                         <span class="input-group-text">x</span>
                                     </div>
-                                    <div class="form-text">{% trans "Leverage multiplier for trades (1-125x)" %}</div>
-                                    <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
-                                        {{ form.leverage.errors }}
+                                    <div class="form-text">
+                                        {% trans "Leverage multiplier for trades (1-125x)" %}
                                     </div>
+                                    {% if form.leverage.errors %}
+                                        <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                            {{ form.leverage.errors }}
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
 
@@ -120,10 +139,14 @@
                                         {% render_field form.take_profit class="form-control form-control-lg" %}
                                         <span class="input-group-text">%</span>
                                     </div>
-                                    <div class="form-text">{% trans "Percentage profit at which to automatically close position" %}</div>
-                                    <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
-                                        {{ form.take_profit.errors }}
+                                    <div class="form-text">
+                                        {% trans "Percentage profit at which to automatically close position" %}
                                     </div>
+                                    {% if form.leverage.errors %}
+                                        <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                            {{ form.leverage.errors }}
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
 
@@ -136,10 +159,14 @@
                                         {% render_field form.stop_loss class="form-control form-control-lg" %}
                                         <span class="input-group-text">%</span>
                                     </div>
-                                    <div class="form-text">{% trans "Percentage loss at which to automatically close position" %}</div>
-                                    <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
-                                        {{ form.stop_loss.errors }}
+                                    <div class="form-text">
+                                        {% trans "Percentage loss at which to automatically close position" %}
                                     </div>
+                                    {% if form.stop_loss.errors %}
+                                        <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                            {{ form.stop_loss.errors }}
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
