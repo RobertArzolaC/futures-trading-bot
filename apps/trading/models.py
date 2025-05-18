@@ -14,8 +14,8 @@ class TradingSettings(TimeStampedModel, BinanceModel):
         on_delete=models.CASCADE,
         related_name="trading_settings",
     )
-    api_key = models.CharField(max_length=255, blank=True)
-    api_secret = models.CharField(max_length=255, blank=True)
+    api_key = models.CharField(blank=True, max_length=500)
+    api_secret = models.CharField(blank=True, max_length=500)
     webhook_url = models.URLField(blank=True)
 
     # Valores configurables

@@ -47,6 +47,14 @@ class SettingsView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
             }
         return context
 
+    def form_valid(self, form):
+        """Guardar la configuración y encriptar las claves API"""
+        settings = self.get_queryset()
+        if settings:
+            form.instance = settings
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
 
 class OperationListView(LoginRequiredMixin, View):
     """Lista de operaciones"""
